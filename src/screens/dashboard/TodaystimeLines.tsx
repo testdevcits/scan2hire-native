@@ -2,7 +2,17 @@ import { View, Text, StyleSheet } from 'react-native'
 import React from 'react'
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants'
 
-const TodaystimeLines = ({ timelineEvents }) => {
+interface TimelineEvent {
+    id: string;
+    title: string;
+    time: string;
+}
+
+interface TodaystimeLinesProps {
+    timelineEvents: TimelineEvent[];
+}
+
+const TodaystimeLines = ({ timelineEvents }: TodaystimeLinesProps) => {
     return (
         <View style={styles.timelineCard}>
             <Text style={styles.cardSectionHeader}>Today's Timeline</Text>

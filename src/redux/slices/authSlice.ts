@@ -15,6 +15,12 @@ type AuthPayload = {
   user: UserProfile | null;
 };
 
+type UpdateProfilePayload = {
+  name?: string;
+  mobile?: string;
+  photoBase64?: string;
+};
+
 interface AuthState {
   user: UserProfile | null;
   token: string | null;
@@ -106,6 +112,38 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+export const updateMyProfile = createAsyncThunk<
+  UserProfile,
+  UpdateProfilePayload,
+  { rejectValue: string }
+>(
+  'auth/updateMyProfile',
+  async ({ name, mobile, photoBase64 }, { rejectWithValue }) => {
+    try {
+      const payload: Record<string, any> = {};
+      if (name !== undefined) {
+        payload.name = name;
+      }
+      if (mobile !== undefined) {
+        payload.mobile = mobile;
+      }
+      if (photoBase64) {
+        payload.photo = {
+          dataUri: `data:image/jpeg;base64,${photoBase64}`,
+        };
+      }
+
+      const response = await axios.put(`${BASE_URL}/users/me`, payload);
+      if (response.data?.success) {
+        return response.data.data;
+      }
+      return rejectWithValue(response.data?.message || 'Profile update failed');
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Profile update failed');
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
@@ -156,6 +194,18 @@ const authSlice = createSlice({
         state.token = null;
         state.user = null;
         state.error = null;
+      })
+      .addCase(updateMyProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateMyProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(updateMyProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Profile update failed';
       });
   },
 });

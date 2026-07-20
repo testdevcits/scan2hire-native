@@ -3,28 +3,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Alert,
   ScrollView,
   ActivityIndicator,
-  Image,
   AppState,
   AppStateStatus,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Geolocation from 'react-native-geolocation-service';
 import ImagePicker, { Image as PickerImage } from 'react-native-image-crop-picker';
-import {
-  User,
-  AlertTriangle,
-  ChevronDown,
-  ChevronUp,
-  LogOut
-} from 'lucide-react-native';
+import { AlertTriangle, LogOut } from 'lucide-react-native';
 
-import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
-import { checkStoredToken, logoutUser } from '../../redux/slices/authSlice';
+import { COLORS, SPACING } from '../../constants';
+import { logoutUser } from '../../redux/slices/authSlice';
 import { requestAppPermissions } from '../../utils/permissionUtils';
 import { UserProfile } from '../../types/user';
 import { AttendanceRecord, attendanceService, BreakType } from '../../api/services/apiService';
@@ -50,6 +42,12 @@ interface TimelineEvent {
   title: string;
   time: string;
 }
+
+type LocationCoords = {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+};
 
 export default function DashboardScreen() {
   const dispatch = useDispatch<any>();
@@ -231,6 +229,31 @@ export default function DashboardScreen() {
     lastLocationActionRef.current = null;
   };
 
+  const readCurrentLocation = (): Promise<LocationCoords> => {
+    const readPosition = (
+      enableHighAccuracy: boolean,
+      timeout: number,
+      maximumAge: number
+    ) =>
+      new Promise<LocationCoords>((resolve, reject) => {
+        Geolocation.getCurrentPosition(
+          (position) => {
+            resolve({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              accuracy: position.coords.accuracy,
+            });
+          },
+          reject,
+          { enableHighAccuracy, timeout, maximumAge }
+        );
+      });
+
+    return readPosition(true, 12000, 5000).catch(() =>
+      readPosition(false, 18000, 60000)
+    );
+  };
+
   const syncCurrentLocation = async (silent = false) => {
     if (!todayRecord || todayRecord.status !== 'running' || locationSyncBusyRef.current) {
       return;
@@ -238,51 +261,40 @@ export default function DashboardScreen() {
 
     locationSyncBusyRef.current = true;
 
-    Geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const res = await attendanceService.syncLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            accuracy: position.coords.accuracy,
-          });
+    try {
+      const coords = await readCurrentLocation();
+      const res = await attendanceService.syncLocation(coords);
 
-          if (res.success && res.data?.attendance) {
-            setTodayRecord(res.data.attendance);
-            const activeBreak = res.data.attendance.breaks?.find((b) => !b.endAt);
-            setOnBreak(Boolean(activeBreak));
-            if (activeBreak?.type && activeBreak.type !== 'location') {
-              setSelectedBreakType(activeBreak.type as BreakType);
-            }
-          }
+      if (res.success && res.data?.attendance) {
+        setTodayRecord(res.data.attendance);
+        const activeBreak = res.data.attendance.breaks?.find((b) => !b.endAt);
+        setOnBreak(Boolean(activeBreak));
+        if (activeBreak?.type && activeBreak.type !== 'location') {
+          setSelectedBreakType(activeBreak.type as BreakType);
+        }
+      }
 
-          const action = res.data?.action;
-          if (
-            action &&
-            ['paused', 'resumed'].includes(action) &&
-            lastLocationActionRef.current !== action
-          ) {
-            lastLocationActionRef.current = action;
-            Alert.alert(action === 'paused' ? 'Work Paused' : 'Work Resumed', res.message);
-          } else if (!silent && res.message) {
-            Alert.alert('Location Synced', res.message);
-          }
-        } catch (error: any) {
-          if (!silent) {
-            Alert.alert('Location Sync Failed', error?.message || 'Unable to sync location.');
-          }
-        } finally {
-          locationSyncBusyRef.current = false;
-        }
-      },
-      () => {
-        locationSyncBusyRef.current = false;
-        if (!silent) {
-          Alert.alert('GPS Error', 'Could not fetch precise GPS. Please try again.');
-        }
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-    );
+      const action = res.data?.action;
+      if (
+        action &&
+        ['paused', 'resumed'].includes(action) &&
+        lastLocationActionRef.current !== action
+      ) {
+        lastLocationActionRef.current = action;
+        Alert.alert(action === 'paused' ? 'Work Paused' : 'Work Resumed', res.message);
+      } else if (!silent && res.message) {
+        Alert.alert('Location Synced', res.message);
+      }
+    } catch (error: any) {
+      if (!silent) {
+        Alert.alert(
+          'Location Sync Failed',
+          error?.message || 'Please turn on GPS and try again.'
+        );
+      }
+    } finally {
+      locationSyncBusyRef.current = false;
+    }
   };
 
   const calculateStaticTimes = () => {
@@ -350,38 +362,32 @@ export default function DashboardScreen() {
       includeBase64: true,
       mediaType: 'photo',
     })
-      .then((image: PickerImage) => {
+      .then(async (image: PickerImage) => {
         if (!image.data) return;
         setLoading(true);
-        Geolocation.getCurrentPosition(
-          async (position) => {
-            try {
-              const res = await attendanceService.startAttendance(image.data!, {
-                latitude: position?.coords?.latitude,
-                longitude: position?.coords?.longitude,
-                // "latitude": 22.7378479,
-                // "longitude": 75.8882395,
-                accuracy: position.coords.accuracy,
-              });
+        try {
+          const coords = await readCurrentLocation();
+          const res = await attendanceService.startAttendance(image.data!, coords);
 
-              if (res.success) {
-                Alert.alert('Success', res.message);
-                fetchTodayStatus();
-              }
-            } catch (error: any) {
-              Alert.alert('Access Denied', error?.message || 'Unable to clock in.');
-            } finally {
-              setLoading(false);
-            }
-          },
-          (_err) => {
-            setLoading(false);
-            Alert.alert('GPS Error', 'Could not fetch precise GPS. Please try again.');
-          },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-        );
+          if (res.success) {
+            Alert.alert('Success', res.message);
+            fetchTodayStatus();
+          }
+        } catch (error: any) {
+          Alert.alert(
+            'Start Work Failed',
+            error?.message || 'Please turn on GPS and try again.'
+          );
+        } finally {
+          setLoading(false);
+        }
       })
-      .catch((err) => console.log('Camera error:', err));
+      .catch((err) => {
+        setLoading(false);
+        if (err?.code !== 'E_PICKER_CANCELLED') {
+          Alert.alert('Camera Error', err?.message || 'Unable to open camera.');
+        }
+      });
   };
 
   const handleEndAttendance = async () => {
@@ -482,8 +488,6 @@ export default function DashboardScreen() {
 
     if (!docs.photo) missing.push('photo');
     if (!docs.resume) missing.push('resume');
-    // Mocks based on desktop state
-    missing.push('aadhaarCard', 'panCard', 'passbook', 'degree');
     return missing;
   };
 
@@ -504,7 +508,7 @@ export default function DashboardScreen() {
         user={user}
         onLogout={handleLogout}
         onRefresh={fetchTodayStatus}
-        onSettingsPress={() => Alert.alert('Settings', 'Navigation configuration can be added here.')}
+        onSettingsPress={() => navigation.navigate('Settings')}
       />
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
 
@@ -665,4 +669,3 @@ export default function DashboardScreen() {
     </View>
   );
 }
-

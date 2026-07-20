@@ -1,5 +1,5 @@
 // src/navigation/TabsNavigation.tsx
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LayoutDashboard, History } from 'lucide-react-native';
@@ -8,7 +8,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, FONTS } from '../constants';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import HistoryScreen from '../screens/history/HistoryScreen';
-import { useDispatch } from 'react-redux';
  
 export type BottomTabParamList = {
   Dashboard: undefined;

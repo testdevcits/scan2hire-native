@@ -6,14 +6,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   ActivityIndicator,
   RefreshControl,
   ListRenderItem,
   TouchableOpacity,
 } from 'react-native';
-import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
+import { COLORS } from '../../constants';
 import { AttendanceRecord, attendanceService } from '../../api/services/apiService';
 import { useDispatch, useSelector } from 'react-redux';
 import { UserProfile } from '../../types/user';
@@ -21,12 +20,6 @@ import { ConfirmationModal, Header, HistoryCard } from '../../components';
 import styles from './styles.history';
 import { useNavigation } from '@react-navigation/native';
 import { logoutUser } from '../../redux/slices/authSlice';
-
-interface StatusConfig {
-  label: string;
-  color: string;
-  bg: string;
-}
 
 type FilterType = 'all' | 'today' | 'yesterday';
 interface AuthState {
@@ -94,19 +87,6 @@ const HistoryScreen = () => {
     }
     return history;
   }, [history, activeFilter]);
-
-  const getStatusConfig = (status: AttendanceRecord['status']): StatusConfig => {
-    switch (status) {
-      case 'present':
-        return { label: 'Present', color: COLORS.success, bg: '#DCFCE7' };
-      case 'half_day':
-        return { label: 'Half Day', color: COLORS.warning, bg: '#FEF3C7' };
-      case 'running':
-        return { label: 'In Progress', color: COLORS.info, bg: '#DBEAFE' };
-      default:
-        return { label: 'Absent', color: COLORS.error, bg: '#FEE2E2' };
-    }
-  };
 
   const renderItem: ListRenderItem<AttendanceRecord> = ({ item }) => {
     return <HistoryCard item={item} />;
@@ -219,5 +199,4 @@ const HistoryScreen = () => {
 }
 
 export default HistoryScreen
-
 

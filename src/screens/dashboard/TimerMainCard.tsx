@@ -1,17 +1,9 @@
- 
-
 import React from 'react';
-import { View, Image, StyleSheet, Dimensions } from 'react-native';
-import Svg, { Circle, G } from 'react-native-svg';
-import { 
-  Coffee, 
-  Briefcase, 
-  Target, 
-  Clock, 
-  ArrowUpRight 
-} from 'lucide-react-native';
-import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
+import { Image, StyleSheet, View } from 'react-native';
+import { Briefcase, Coffee, Clock, Target, User } from 'lucide-react-native';
+
 import AppText from '../../components/common/AppText';
+import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 
 interface ProgressData {
   workPercent: number;
@@ -21,136 +13,94 @@ interface ProgressData {
 
 interface TimerMainCardProps {
   progress: ProgressData;
-  TodaysSelfie: string;
+  TodaysSelfie?: string;
   totalTime: string;
   workTime: string;
   breakTime: string;
   targetTime?: string;
 }
 
-const TimerMainCard: React.FC<TimerMainCardProps> = ({ 
-  progress, 
-  TodaysSelfie, 
-  totalTime, 
-  workTime, 
+const TimerMainCard: React.FC<TimerMainCardProps> = ({
+  progress,
+  TodaysSelfie,
+  totalTime,
+  workTime,
   breakTime,
-  targetTime = "08:30:00"
+  targetTime = '08:30:00',
 }) => {
-  const size = 130;
-  const strokeWidth = 12;
-  const center = size / 2;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-
-  // Calculate Dash Offsets
-  const workStroke = (progress.workPercent / 100) * circumference;
-  const breakStroke = (progress.breakPercent / 100) * circumference;
-  
-  const primaryStatusColor = progress.complete ? COLORS.success : COLORS.success;
+  const workColor = progress.complete ? COLORS.success : COLORS.primary;
+  const hasSelfie = Boolean(TodaysSelfie);
 
   return (
     <View style={styles.container}>
-      {/* Header Row */}
       <View style={styles.header}>
-        <View style={styles.userInfo}>
-          <Image source={{ uri: TodaysSelfie }} style={styles.avatar} />
+        <View style={styles.avatarWrap}>
+          {hasSelfie ? (
+            <Image source={{ uri: TodaysSelfie }} style={styles.avatar} />
+          ) : (
+            <View style={styles.avatarFallback}>
+              <User size={20} color={COLORS.primary} />
+            </View>
+          )}
+        </View>
+        <View style={styles.headerText}>
+          <AppText style={styles.title}>Attendance Timer</AppText>
+          <AppText style={styles.subtitle}>Office radius sync runs every 10 seconds</AppText>
+        </View>
+      </View>
+
+      <View style={styles.progressTrack}>
+        <View
+          style={[
+            styles.workFill,
+            { backgroundColor: workColor, width: `${progress.workPercent}%` },
+          ]}
+        />
+        <View
+          style={[
+            styles.breakFill,
+            {
+              left: `${progress.workPercent}%`,
+              width: `${progress.breakPercent}%`,
+            },
+          ]}
+        />
+        <View style={styles.progressCenter}>
+          <Clock size={15} color={COLORS.white} />
+          <AppText style={styles.totalTime}>{totalTime}</AppText>
+        </View>
+      </View>
+
+      <View style={styles.targetRow}>
+        <Target size={15} color={progress.complete ? COLORS.success : COLORS.textSecondary} />
+        <AppText
+          style={[
+            styles.targetText,
+            progress.complete && styles.targetCompleteText,
+          ]}
+        >
+          Target {targetTime}
+        </AppText>
+      </View>
+
+      <View style={styles.metricsRow}>
+        <View style={styles.metricCard}>
+          <View style={[styles.iconCircle, { backgroundColor: `${workColor}14` }]}>
+            <Briefcase size={16} color={workColor} />
+          </View>
           <View>
-            <AppText style={styles.title}>Daily Activity</AppText>
-            <AppText style={styles.subtitle}>Real-time session</AppText>
-          </View>
-        </View>
-        <View style={styles.liveBadge}>
-          <View style={styles.pulseDot} />
-          <AppText style={styles.liveText}>LIVE</AppText>
-        </View>
-      </View>
-
-      {/* Main Hero Content: Circle + Main Stats */}
-      <View style={styles.heroSection}>
-        {/* Left: Circular Progress */}
-        <View style={styles.chartContainer}>
-          <Svg width={size} height={size}>
-            <G rotation="-90" origin={`${center}, ${center}`}>
-              {/* Background Ring */}
-              <Circle
-                cx={center}
-                cy={center}
-                r={radius}
-                stroke={COLORS.grey100}
-                strokeWidth={strokeWidth}
-                fill="transparent"
-              />
-              {/* Work Segment */}
-              <Circle
-                cx={center}
-                cy={center}
-                r={radius}
-                stroke={primaryStatusColor}
-                strokeWidth={strokeWidth}
-                strokeDasharray={`${workStroke} ${circumference}`}
-                strokeLinecap="round"
-                fill="transparent"
-              />
-              {/* Break Segment - Starts after work segment */}
-              <Circle
-                cx={center}
-                cy={center}
-                r={radius}
-                stroke={COLORS.warning}
-                strokeWidth={strokeWidth}
-                strokeDasharray={`${breakStroke} ${circumference}`}
-                strokeDashoffset={-workStroke}
-                strokeLinecap="round"
-                fill="transparent"
-              />
-            </G>
-          </Svg>
-          {/* Center Text in Circle */}
-          <View style={styles.circleCenterText}>
-            <Clock size={16} color={COLORS.textLight} />
-            <AppText style={styles.mainTime}>{totalTime.split(':').slice(0,2).join(':')}</AppText>
-            <AppText style={styles.timeLabel}>HRS:MIN</AppText>
+            <AppText style={styles.metricLabel}>Work Time</AppText>
+            <AppText style={styles.metricValue}>{workTime}</AppText>
           </View>
         </View>
 
-        {/* Right: Key Stats */}
-        <View style={styles.statsColumn}>
-          <View  >
-            <AppText style={styles.statHeader}>TOTAL DURATION</AppText>
-            <AppText style={styles.statLargeValue}>{totalTime}</AppText>
-          </View>
-
-          <View style={styles.targetRow}>
-            <View style={styles.targetIcon}>
-              <Target size={14} color={COLORS.textSecondary} />
-            </View>
-            <View>
-              <AppText style={styles.targetLabel}>DAILY TARGET</AppText>
-              <AppText style={styles.targetValue}>{targetTime}</AppText>
-            </View>
-          </View>
-        </View>
-      </View>
-
-      {/* Bottom Action Cards */}
-      <View style={styles.footerGrid}>
-        <View style={styles.bottomCard}>
-          <View style={[styles.iconCircle, { backgroundColor: '#EEF2FF' }]}>
-            <Briefcase size={16} color={COLORS.primary} />
-          </View>
-          <View style={styles.bottomCardText}>
-            <AppText style={styles.bottomLabel}>Work Time</AppText>
-            <AppText style={styles.bottomValue}>{workTime}</AppText>
-          </View>
-        </View>
-
-        <View style={styles.bottomCard}>
+        <View style={styles.metricCard}>
           <View style={[styles.iconCircle, { backgroundColor: '#FFFBEB' }]}>
             <Coffee size={16} color={COLORS.warning} />
           </View>
-          <View style={styles.bottomCardText}>
-            <AppText style={styles.bottomLabel}>Break Time</AppText>
-            <AppText style={styles.bottomValue}>{breakTime}</AppText>
+          <View>
+            <AppText style={styles.metricLabel}>Break Time</AppText>
+            <AppText style={styles.metricValue}>{breakTime}</AppText>
           </View>
         </View>
       </View>
@@ -161,33 +111,41 @@ const TimerMainCard: React.FC<TimerMainCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.xl,
-    padding: SPACING.lg,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
     borderWidth: 1,
     borderColor: COLORS.border,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.04,
-    shadowRadius: 16,
-    elevation: 1,
-    marginBottom:10
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    marginBottom: SPACING.md,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.md,
   },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
+  avatarWrap: {
+    marginRight: SPACING.sm,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: COLORS.grey100,
+  },
+  avatarFallback: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: `${COLORS.primary}12`,
+  },
+  headerText: {
+    flex: 1,
   },
   title: {
     fontSize: FONT_SIZE.lg,
@@ -197,124 +155,91 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: FONT_SIZE.xs,
     color: COLORS.textSecondary,
-    marginTop: -2,
+    marginTop: 2,
   },
-  liveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEF2F2',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: RADIUS.sm,
-    gap: 4,
-  },
-  pulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.error,
-  },
-  liveText: {
-    fontSize: 10,
-    fontFamily: FONTS.bold,
-    color: COLORS.error,
-  },
-  heroSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xl,
-    marginBottom: SPACING.xl,
-  },
-  chartContainer: {
+  progressTrack: {
+    height: 64,
+    borderRadius: RADIUS.round,
+    backgroundColor: COLORS.grey200,
+    overflow: 'hidden',
     justifyContent: 'center',
-    alignItems: 'center',
     position: 'relative',
   },
-  circleCenterText: {
+  workFill: {
     position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+  },
+  breakFill: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    backgroundColor: COLORS.warning,
+  },
+  progressCenter: {
+    alignSelf: 'center',
     alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: RADIUS.round,
+    backgroundColor: 'rgba(17, 24, 39, 0.32)',
   },
-  mainTime: {
-    fontSize: 22,
+  totalTime: {
+    color: COLORS.white,
     fontFamily: FONTS.bold,
-    color: COLORS.textPrimary,
-    marginTop: 2,
-  },
-  timeLabel: {
-    fontSize: 8,
-    fontFamily: FONTS.bold,
-    color: COLORS.textLight,
-    letterSpacing: 0.5,
-  },
-  statsColumn: {
-    flex: 1,
-    gap: SPACING.lg,
-  },
-  statHeader: {
-    fontSize: 10,
-    fontFamily: FONTS.bold,
-    color: COLORS.textLight,
-    letterSpacing: 1,
-  },
-  statLargeValue: {
-    fontSize: 26,
-    fontFamily: FONTS.bold,
-    color: COLORS.textPrimary,
-    marginTop: 2,
+    fontSize: FONT_SIZE.xl,
   },
   targetRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    justifyContent: 'center',
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.md,
   },
-  targetIcon: {
-    padding: 8,
-    backgroundColor: COLORS.grey50,
-    borderRadius: RADIUS.md,
-  },
-  targetLabel: {
-    fontSize: 9,
-    fontFamily: FONTS.bold,
+  targetText: {
+    marginLeft: 5,
+    fontFamily: FONTS.semiBold,
+    fontSize: FONT_SIZE.xs,
     color: COLORS.textSecondary,
   },
-  targetValue: {
-    fontSize: 14,
-    fontFamily: FONTS.bold,
-    color: COLORS.textPrimary,
+  targetCompleteText: {
+    color: COLORS.success,
   },
-  footerGrid: {
+  metricsRow: {
     flexDirection: 'row',
-    gap: SPACING.md,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.grey50,
-    paddingTop: SPACING.lg,
+    gap: SPACING.sm,
   },
-  bottomCard: {
+  metricCard: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    backgroundColor: COLORS.grey50,
+    borderWidth: 1,
+    borderColor: COLORS.divider,
+    borderRadius: RADIUS.sm,
+    padding: SPACING.sm,
   },
   iconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: SPACING.sm,
   },
-  bottomCardText: {
-    flex: 1,
-  },
-  bottomLabel: {
-    fontSize: 10,
+  metricLabel: {
     color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.xs,
     fontFamily: FONTS.medium,
   },
-  bottomValue: {
-    fontSize: 14,
-    fontFamily: FONTS.bold,
+  metricValue: {
     color: COLORS.textPrimary,
+    fontSize: FONT_SIZE.md,
+    fontFamily: FONTS.bold,
+    marginTop: 2,
   },
 });
 

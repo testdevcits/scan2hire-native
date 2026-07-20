@@ -112,12 +112,12 @@
 // });
 
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming, interpolate } from 'react-native-reanimated';
 import { 
   User, 
   ChevronDown, 
+  ChevronUp,
   IdCard, 
   Building2, 
   Briefcase, 
@@ -144,17 +144,6 @@ const ProfileCollapsibleCard: React.FC<ProfileCollapsibleCardProps> = ({
   setIsProfileCollapsed, 
   isProfileCollapsed 
 }) => {
-  
-  const rotation = useSharedValue(0);
-
-  useEffect(() => {
-    rotation.value = withTiming(isProfileCollapsed ? 0 : 180, { duration: 300 });
-  }, [isProfileCollapsed]);
-
-  const chevronStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }],
-  }));
-
   const toggleCollapse = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsProfileCollapsed(!isProfileCollapsed);
@@ -181,7 +170,7 @@ const ProfileCollapsibleCard: React.FC<ProfileCollapsibleCardProps> = ({
       >
         <View style={styles.headerLeft}>
           <View style={styles.userIconBox}>
-            <User size={20} color={COLORS.white} variant="Bold" />
+            <User size={20} color={COLORS.white} />
           </View>
           <View>
             <AppText style={styles.headerTitle}>Professional Profile</AppText>
@@ -189,9 +178,13 @@ const ProfileCollapsibleCard: React.FC<ProfileCollapsibleCardProps> = ({
           </View>
         </View>
         
-        <Animated.View style={[styles.chevronCircle, chevronStyle]}>
-          <ChevronDown size={18} color={COLORS.textSecondary} />
-        </Animated.View>
+        <View style={styles.chevronCircle}>
+          {isProfileCollapsed ? (
+            <ChevronDown size={18} color={COLORS.textSecondary} />
+          ) : (
+            <ChevronUp size={18} color={COLORS.textSecondary} />
+          )}
+        </View>
       </TouchableOpacity>
 
       {!isProfileCollapsed && (

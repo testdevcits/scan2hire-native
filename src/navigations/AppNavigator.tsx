@@ -7,6 +7,7 @@ import LoginScreen from '../screens/login/Login';
 import { checkStoredToken } from '../redux/slices/authSlice';
 import TabsNavigation from './TabsNavigation';
 import SplashScreen from '../screens/splash/Splash';
+import ProfileSettingsScreen from '../screens/settings/ProfileSettingsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -35,7 +36,10 @@ export default function AppNavigator() {
       {token === null ? (
         <Stack.Screen name="Login" component={LoginScreen} />
       ) : (
-        <Stack.Screen name="Main" component={TabsNavigation} />
+        <>
+          <Stack.Screen name="Main" component={TabsNavigation} />
+          <Stack.Screen name="Settings" component={ProfileSettingsScreen} />
+        </>
       )}
     </Stack.Navigator>
   );
