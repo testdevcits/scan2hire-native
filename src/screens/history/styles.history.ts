@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
         color: COLORS.primary,
     },
     listContent: {
-        paddingBottom: SPACING.xl,
+        paddingBottom:150,
     },
 
     loaderContainer: {

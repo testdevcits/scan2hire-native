@@ -19,6 +19,7 @@ interface HeaderProps {
     onLogout?: () => void;
     onRefresh?: () => void;
     onSettingsPress?: () => void;
+    onPressProfile?:()=>void
 }
 
 const Header = ({
@@ -26,6 +27,7 @@ const Header = ({
     onLogout,
     onRefresh,
     onSettingsPress,
+    onPressProfile
 }: HeaderProps) => {
     const [menuVisible, setMenuVisible] = useState<boolean>(false);
 
@@ -42,7 +44,7 @@ const Header = ({
     return (
         <View style={styles.container}>
             {/* Left: Avatar & User Information */}
-            <View style={styles.profileSection}>
+            <Pressable onPress={profileUrl && onPressProfile} style={styles.profileSection}>
                 {profileUrl && profileUrl.trim() !== '' ? (
                     <Image source={{ uri: profileUrl }} style={styles.avatarImage} />
                 ) : (
@@ -59,7 +61,7 @@ const Header = ({
                         ID: {employeeId}
                     </Text>
                 </View>
-            </View>
+            </Pressable>
 
             {/* Right: Three Dots Menu Icon */}
             <TouchableOpacity

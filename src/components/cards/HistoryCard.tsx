@@ -100,7 +100,8 @@ const HistoryCard: React.FC<HistoryCardProps> = ({ item }) => {
           <AppText style={styles.footerValue}>{formatMinutes(item.totalBreakMinutes)}</AppText>
           <AppText style={styles.footerLabel}>Breaks</AppText>
         </View>
-        <ChevronRight size={16} color={COLORS.grey300} />
+        {/* <ChevronRight size={16} color={COLORS.grey300} /> */}
+
       </View>
     </View>
   );
@@ -195,6 +196,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
     padding: SPACING.sm,
     gap: SPACING.md,
+    justifyContent:"space-between"
   },
   footerItem: {
     flexDirection: 'row',

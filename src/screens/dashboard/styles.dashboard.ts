@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   endWorkBtn: {
-    backgroundColor: COLORS.error,
+    backgroundColor: COLORS.primaryDark,
     paddingVertical: SPACING.md,
     borderRadius: RADIUS.sm,
     alignItems: 'center',
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   startBreakBtnColor: {
-    backgroundColor: COLORS.warning,
+    backgroundColor: COLORS.primaryLight,
   },
   endBreakBtnColor: {
     backgroundColor: COLORS.success,

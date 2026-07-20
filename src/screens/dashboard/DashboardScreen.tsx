@@ -20,12 +20,14 @@ import { logoutUser } from '../../redux/slices/authSlice';
 import { requestAppPermissions } from '../../utils/permissionUtils';
 import { UserProfile } from '../../types/user';
 import { AttendanceRecord, attendanceService, BreakType } from '../../api/services/apiService';
-import { ConfirmationModal, Header } from '../../components';
+import { ConfirmationModal, Header, ImageViewerModal } from '../../components';
 import { useNavigation } from '@react-navigation/native';
 import TimerMainCard from './TimerMainCard';
 import ProfileCollapsibleCard from './ProfileCollapsibleCard';
 import TodaystimeLines from './TodaystimeLines';
 import styles from './styles.dashboard';
+import Toast from 'react-native-toast-message';
+
 
 interface AuthState {
   user: UserProfile | null;
@@ -76,8 +78,11 @@ export default function DashboardScreen() {
   const dispatch = useDispatch<any>();
   const { user } = useSelector((state: RootState) => state.auth);
   const navigation = useNavigation<any>();
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
+  const [selecttedPhotoUrl, setSelectedPhoto] = useState('')
 
- 
+
+
   const [loading, setLoading] = useState<boolean>(false);
   const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
 
@@ -92,7 +97,7 @@ export default function DashboardScreen() {
 
   // Break Selector & Profile Collapse State
   const [selectedBreakType, setSelectedBreakType] = useState<BreakType>('lunch');
-  const [isProfileCollapsed, setIsProfileCollapsed] = useState<boolean>(true);
+  const [isProfileCollapsed, setIsProfileCollapsed] = useState<boolean>(false);
   const [onBreak, setOnBreak] = useState<boolean>(false);
 
   // Confirmation Modal States [1]
@@ -163,7 +168,7 @@ export default function DashboardScreen() {
   }, [todayRecord?.status]);
 
 
- 
+
 
 
   const fetchTodayStatus = async () => {
@@ -353,7 +358,14 @@ export default function DashboardScreen() {
         lastLocationActionRef.current !== action
       ) {
         lastLocationActionRef.current = action;
-        Alert.alert(action === 'paused' ? 'Work Paused' : 'Work Resumed', res.message);
+        // Alert.alert(action === 'paused' ? 'Work Paused' : 'Work Resumed', res.message);
+        Toast.show({
+          type: 'success',
+          text1: action === 'paused' ? 'Work Paused' : 'Work Resumed',
+          text2: res.message,
+          position: 'top', // or 'bottom'
+        });
+
       } else if (!silent && res.message) {
         Alert.alert('Location Synced', res.message);
       }
@@ -453,7 +465,13 @@ export default function DashboardScreen() {
           const message = getApiMessage(error, 'Please turn on GPS and try again.');
           setActionTone('error');
           setActionMessage(message);
-          Alert.alert('Start Work Failed', message);
+          // Alert.alert('Start Work Failed', message);
+
+          Toast.show({
+            type: 'error',
+            text1: 'Start Work Failed',
+            text2: message,
+          });
         } finally {
           setLoading(false);
         }
@@ -502,7 +520,15 @@ export default function DashboardScreen() {
           const message = res.message || `Active ${selectedBreakType} break recorded.`;
           setActionTone('success');
           setActionMessage(message);
-          Alert.alert('Break Started', message);
+          // Alert.alert('Break Started', message);
+          Toast.show({
+            type: 'success',
+            text1: 'Break Started',
+            text2: message,
+            position: 'top', // or 'bottom'
+          });
+
+
           fetchTodayStatus();
         }
       } else {
@@ -512,7 +538,14 @@ export default function DashboardScreen() {
           const message = res.message || 'Break entry finalized.';
           setActionTone('success');
           setActionMessage(message);
-          Alert.alert('Break Ended', message);
+          // Alert.alert('Break Ended', message);
+
+          Toast.show({
+            type: 'success',
+            text1: 'Break Ended',
+            text2: message,
+            position: 'top', // or 'bottom'
+          });
           fetchTodayStatus();
         }
       }
@@ -600,11 +633,12 @@ export default function DashboardScreen() {
         onLogout={handleLogout}
         onRefresh={fetchTodayStatus}
         onSettingsPress={() => navigation.navigate('Settings')}
+        onPressProfile={() => { setSelectedPhoto(user?.profileImage), setIsViewerVisible(!isViewerVisible) }}
       />
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
 
         {/* Pending Documents Banner Alert */}
-        {missingDocs.length > 0 && (
+        {/* {missingDocs.length > 0 && (
           <View style={styles.warningBanner}>
             <View style={styles.warningRow}>
               <AlertTriangle size={20} color={COLORS.error} style={{ marginRight: SPACING.sm }} />
@@ -614,7 +648,7 @@ export default function DashboardScreen() {
               Please upload all required documents. Missing: {missingDocs.join(', ')}.
             </Text>
           </View>
-        )}
+        )} */}
 
         {/* Attendance Timer Display Grid */}
 
@@ -626,11 +660,11 @@ export default function DashboardScreen() {
         {/* Primary Today's Attendance Operations Control */}
         <View style={styles.controlCard}>
           <Text style={styles.controlTitle}>Today's Attendance Operations</Text>
-          {!!actionMessage && (
+          {/* {!!actionMessage && (
             <View style={[styles.actionNotice, styles[`actionNotice_${actionTone}`]]}>
               <Text style={styles.actionNoticeText}>{actionMessage}</Text>
             </View>
-          )}
+          )} */}
 
           {!todayRecord ? (
             <View style={styles.clockInContainer}>
@@ -641,7 +675,7 @@ export default function DashboardScreen() {
             </View>
           ) : (
             <View>
-              {!!locationMessage && (
+              {/* {!!locationMessage && (
                 <View
                   style={[
                     styles.locationNotice,
@@ -650,13 +684,13 @@ export default function DashboardScreen() {
                 >
                   <Text style={styles.locationNoticeText}>{locationMessage}</Text>
                 </View>
-              )}
+              )} */}
               {/* Info Overview */}
-              <View style={styles.summaryRow}>
+              {/* <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Status: <Text style={styles.summaryVal}>{todayRecord.status}</Text></Text>
                 <Text style={styles.summaryLabel}>Work: <Text style={styles.summaryVal}>{workTime}</Text></Text>
                 <Text style={styles.summaryLabel}>Break: <Text style={styles.summaryVal}>{breakTime}</Text></Text>
-              </View>
+              </View> */}
 
               {todayRecord.status === 'running' && (
                 <View style={styles.attendanceActionsBlock}>
@@ -771,6 +805,13 @@ export default function DashboardScreen() {
         />
 
 
+        {isViewerVisible &&
+          <ImageViewerModal
+            isVisible={isViewerVisible}
+            onClose={() => setIsViewerVisible(false)}
+            imageUrl={selecttedPhotoUrl}
+          />
+        }
       </ScrollView>
     </View>
   );
