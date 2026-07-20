@@ -59,6 +59,34 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.divider,
     paddingBottom: SPACING.xs,
   },
+  actionNotice: {
+    borderWidth: 1,
+    borderRadius: RADIUS.sm,
+    padding: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
+  actionNotice_info: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#BFDBFE',
+  },
+  actionNotice_success: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#BBF7D0',
+  },
+  actionNotice_warning: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+  },
+  actionNotice_error: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FCA5A5',
+  },
+  actionNoticeText: {
+    fontFamily: FONTS.medium,
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textPrimary,
+    lineHeight: 17,
+  },
   clockInContainer: {
     alignItems: 'center',
     paddingVertical: SPACING.lg,
@@ -91,6 +119,24 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
     borderWidth: 1,
     borderColor: COLORS.divider,
+  },
+  locationNotice: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#BBF7D0',
+    borderWidth: 1,
+    borderRadius: RADIUS.sm,
+    padding: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
+  locationNoticeWarning: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+  },
+  locationNoticeText: {
+    fontFamily: FONTS.medium,
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textPrimary,
+    lineHeight: 17,
   },
   summaryLabel: {
     fontFamily: FONTS.regular,

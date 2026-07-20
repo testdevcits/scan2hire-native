@@ -49,6 +49,29 @@ type LocationCoords = {
   accuracy?: number;
 };
 
+type LocationReadOptions = {
+  allowEmulatorDefault?: boolean;
+};
+
+const EMULATOR_DEFAULT_LOCATION = {
+  latitude: 37.4219983,
+  longitude: -122.084,
+};
+
+const isNearCoordinate = (
+  coords: LocationCoords,
+  target: LocationCoords,
+  tolerance = 0.0005
+) =>
+  Math.abs(coords.latitude - target.latitude) <= tolerance &&
+  Math.abs(coords.longitude - target.longitude) <= tolerance;
+
+const getApiMessage = (error: any, fallback: string) =>
+  error?.message ||
+  error?.response?.data?.message ||
+  error?.raw?.message ||
+  fallback;
+
 export default function DashboardScreen() {
   const dispatch = useDispatch<any>();
   const { user } = useSelector((state: RootState) => state.auth);
@@ -78,6 +101,9 @@ export default function DashboardScreen() {
 
 
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
+  const [locationMessage, setLocationMessage] = useState<string>('');
+  const [actionMessage, setActionMessage] = useState<string>('');
+  const [actionTone, setActionTone] = useState<'info' | 'success' | 'warning' | 'error'>('info');
   const locationSyncRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const locationSyncBusyRef = useRef<boolean>(false);
   const lastLocationActionRef = useRef<string | null>(null);
@@ -149,23 +175,36 @@ export default function DashboardScreen() {
         const match = res.data.find((rec) => rec.dateKey === todayStr);
         if (match) {
           setTodayRecord(match);
+          if (match.loginLocation) {
+            setLocationMessage(
+              match.loginLocation.withinRadius
+                ? 'Inside office radius. Work time is active.'
+                : `Outside office radius by ${match.loginLocation.distanceFromOfficeMeters || 0}m. Work time is paused.`
+            );
+          }
           // Check if currently on an active break (startAt exists but no endAt)
           const activeBreak = match.breaks?.find((b) => !b.endAt);
           if (activeBreak) {
             setOnBreak(true);
-            setSelectedBreakType(activeBreak.type as BreakType);
+            if (activeBreak.type !== 'location') {
+              setSelectedBreakType(activeBreak.type as BreakType);
+            }
           } else {
             setOnBreak(false);
           }
         } else {
           setTodayRecord(null);
           setOnBreak(false);
+          setLocationMessage('');
         }
       } else {
         setTodayRecord(null);
         setOnBreak(false);
+        setLocationMessage('');
       }
     } catch (e) {
+      setActionTone('error');
+      setActionMessage(getApiMessage(e, 'Unable to fetch attendance status.'));
       console.log('Error fetching daily status:', e);
     } finally {
       setLoading(false);
@@ -229,7 +268,9 @@ export default function DashboardScreen() {
     lastLocationActionRef.current = null;
   };
 
-  const readCurrentLocation = (): Promise<LocationCoords> => {
+  const readCurrentLocation = (
+    options: LocationReadOptions = {}
+  ): Promise<LocationCoords> => {
     const readPosition = (
       enableHighAccuracy: boolean,
       timeout: number,
@@ -238,19 +279,45 @@ export default function DashboardScreen() {
       new Promise<LocationCoords>((resolve, reject) => {
         Geolocation.getCurrentPosition(
           (position) => {
-            resolve({
+            const coords = {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               accuracy: position.coords.accuracy,
-            });
+            };
+
+            if (
+              !options.allowEmulatorDefault &&
+              (position.mocked || isNearCoordinate(coords, EMULATOR_DEFAULT_LOCATION))
+            ) {
+              reject(
+                new Error(
+                  'Device is sending emulator/mock location. Set emulator GPS to office location or test on a real phone near office.'
+                )
+              );
+              return;
+            }
+
+            resolve(coords);
           },
           reject,
-          { enableHighAccuracy, timeout, maximumAge }
+          {
+            enableHighAccuracy,
+            timeout,
+            maximumAge,
+            accuracy: {
+              android: enableHighAccuracy ? 'high' : 'balanced',
+              ios: enableHighAccuracy ? 'best' : 'nearestTenMeters',
+            },
+            showLocationDialog: true,
+            forceRequestLocation: true,
+          }
         );
       });
 
-    return readPosition(true, 12000, 5000).catch(() =>
-      readPosition(false, 18000, 60000)
+    return readPosition(true, 20000, 0).catch((firstError) =>
+      readPosition(false, 20000, 0).catch(() => {
+        throw firstError;
+      })
     );
   };
 
@@ -266,6 +333,11 @@ export default function DashboardScreen() {
       const res = await attendanceService.syncLocation(coords);
 
       if (res.success && res.data?.attendance) {
+        setLocationMessage(
+          res.data.withinRadius
+            ? 'Inside office radius. Work time is active.'
+            : `Outside office radius by ${res.data.distanceFromOfficeMeters || 0}m. Work time is paused.`
+        );
         setTodayRecord(res.data.attendance);
         const activeBreak = res.data.attendance.breaks?.find((b) => !b.endAt);
         setOnBreak(Boolean(activeBreak));
@@ -286,11 +358,12 @@ export default function DashboardScreen() {
         Alert.alert('Location Synced', res.message);
       }
     } catch (error: any) {
+      const message = getApiMessage(error, 'Please turn on GPS and try again.');
+      setLocationMessage(message);
       if (!silent) {
-        Alert.alert(
-          'Location Sync Failed',
-          error?.message || 'Please turn on GPS and try again.'
-        );
+        setActionTone('error');
+        setActionMessage(message);
+        Alert.alert('Location Sync Failed', message);
       }
     } finally {
       locationSyncBusyRef.current = false;
@@ -370,14 +443,17 @@ export default function DashboardScreen() {
           const res = await attendanceService.startAttendance(image.data!, coords);
 
           if (res.success) {
-            Alert.alert('Success', res.message);
+            const message = res.message || 'Attendance started successfully.';
+            setActionTone('success');
+            setActionMessage(message);
+            Alert.alert('Success', message);
             fetchTodayStatus();
           }
         } catch (error: any) {
-          Alert.alert(
-            'Start Work Failed',
-            error?.message || 'Please turn on GPS and try again.'
-          );
+          const message = getApiMessage(error, 'Please turn on GPS and try again.');
+          setActionTone('error');
+          setActionMessage(message);
+          Alert.alert('Start Work Failed', message);
         } finally {
           setLoading(false);
         }
@@ -400,11 +476,17 @@ export default function DashboardScreen() {
       const res = await attendanceService.endAttendance();
       if (res.success) {
         setShowClockOutModal(false);
-        Alert.alert('Shift Ended', res.message || 'Attendance ended successfully.');
+        const message = res.message || 'Attendance ended successfully.';
+        setActionTone('success');
+        setActionMessage(message);
+        Alert.alert('Shift Ended', message);
         fetchTodayStatus();
       }
     } catch (error: any) {
-      Alert.alert('Error', error?.message || 'Checkout failed.');
+      const message = getApiMessage(error, 'Checkout failed.');
+      setActionTone('error');
+      setActionMessage(message);
+      Alert.alert('Error', message);
     } finally {
       setClockOutLoading(false);
     }
@@ -417,19 +499,28 @@ export default function DashboardScreen() {
         const res = await attendanceService.startBreak(selectedBreakType);
         if (res.success) {
           setOnBreak(true);
-          Alert.alert('Break Started', `Active ${selectedBreakType} break recorded.`);
+          const message = res.message || `Active ${selectedBreakType} break recorded.`;
+          setActionTone('success');
+          setActionMessage(message);
+          Alert.alert('Break Started', message);
           fetchTodayStatus();
         }
       } else {
         const res = await attendanceService.endBreak();
         if (res.success) {
           setOnBreak(false);
-          Alert.alert('Break Ended', 'Break entry finalized.');
+          const message = res.message || 'Break entry finalized.';
+          setActionTone('success');
+          setActionMessage(message);
+          Alert.alert('Break Ended', message);
           fetchTodayStatus();
         }
       }
     } catch (error: any) {
-      Alert.alert('Request Failed', error?.message || 'Transaction failed.');
+      const message = getApiMessage(error, 'Transaction failed.');
+      setActionTone('error');
+      setActionMessage(message);
+      Alert.alert('Request Failed', message);
     } finally {
       setLoading(false);
     }
@@ -535,6 +626,11 @@ export default function DashboardScreen() {
         {/* Primary Today's Attendance Operations Control */}
         <View style={styles.controlCard}>
           <Text style={styles.controlTitle}>Today's Attendance Operations</Text>
+          {!!actionMessage && (
+            <View style={[styles.actionNotice, styles[`actionNotice_${actionTone}`]]}>
+              <Text style={styles.actionNoticeText}>{actionMessage}</Text>
+            </View>
+          )}
 
           {!todayRecord ? (
             <View style={styles.clockInContainer}>
@@ -545,6 +641,16 @@ export default function DashboardScreen() {
             </View>
           ) : (
             <View>
+              {!!locationMessage && (
+                <View
+                  style={[
+                    styles.locationNotice,
+                    todayRecord.loginLocation?.withinRadius === false && styles.locationNoticeWarning,
+                  ]}
+                >
+                  <Text style={styles.locationNoticeText}>{locationMessage}</Text>
+                </View>
+              )}
               {/* Info Overview */}
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Status: <Text style={styles.summaryVal}>{todayRecord.status}</Text></Text>

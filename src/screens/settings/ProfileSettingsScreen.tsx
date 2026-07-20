@@ -43,7 +43,14 @@ const ProfileSettingsScreen = () => {
     setPhotoUri(user?.profileImage || user?.employeeProfile?.documents?.photo?.url);
   }, [user]);
 
-  const pickPhoto = async () => {
+  const handlePickedImage = (image: PickerImage) => {
+    if (image.data) {
+      setPhotoBase64(image.data);
+      setPhotoUri(image.path);
+    }
+  };
+
+  const pickPhotoFromGallery = async () => {
     try {
       const image: PickerImage = await ImagePicker.openPicker({
         width: 600,
@@ -53,15 +60,39 @@ const ProfileSettingsScreen = () => {
         mediaType: 'photo',
       });
 
-      if (image.data) {
-        setPhotoBase64(image.data);
-        setPhotoUri(image.path);
-      }
+      handlePickedImage(image);
     } catch (error: any) {
       if (error?.code !== 'E_PICKER_CANCELLED') {
         Alert.alert('Photo Error', error?.message || 'Unable to select photo.');
       }
     }
+  };
+
+  const takeProfilePhoto = async () => {
+    try {
+      const image: PickerImage = await ImagePicker.openCamera({
+        width: 600,
+        height: 600,
+        cropping: true,
+        includeBase64: true,
+        mediaType: 'photo',
+        useFrontCamera: true,
+      });
+
+      handlePickedImage(image);
+    } catch (error: any) {
+      if (error?.code !== 'E_PICKER_CANCELLED') {
+        Alert.alert('Camera Error', error?.message || 'Unable to capture photo.');
+      }
+    }
+  };
+
+  const choosePhotoSource = () => {
+    Alert.alert('Profile Photo', 'Choose photo source', [
+      { text: 'Camera', onPress: takeProfilePhoto },
+      { text: 'Gallery', onPress: pickPhotoFromGallery },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
   const saveProfile = async () => {
@@ -87,7 +118,7 @@ const ProfileSettingsScreen = () => {
     );
 
     if (updateMyProfile.fulfilled.match(result)) {
-      Alert.alert('Profile Updated', 'Your profile has been updated successfully.');
+      Alert.alert('Profile Updated', result.payload.message);
       navigation.goBack();
     } else {
       Alert.alert('Update Failed', result.payload || 'Unable to update profile.');
@@ -123,9 +154,9 @@ const ProfileSettingsScreen = () => {
                 <User size={34} color={COLORS.primary} />
               )}
             </View>
-            <TouchableOpacity style={styles.photoButton} onPress={pickPhoto}>
+            <TouchableOpacity style={styles.photoButton} onPress={choosePhotoSource}>
               <Camera size={16} color={COLORS.primary} />
-              <Text style={styles.photoButtonText}>Change Photo</Text>
+              <Text style={styles.photoButtonText}>Upload Profile Photo</Text>
             </TouchableOpacity>
           </View>
 

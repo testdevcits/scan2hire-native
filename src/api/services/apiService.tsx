@@ -55,6 +55,13 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+const ensureSuccess = <T,>(response: ApiResponse<T>): ApiResponse<T> => {
+  if (!response.success) {
+    throw { message: response.message || 'Request failed', raw: response };
+  }
+  return response;
+};
+
 // Service Implementation
 export const attendanceService = {
   /**
@@ -82,7 +89,7 @@ export const attendanceService = {
       '/users/attendance/start',
       payload
     );
-    return response as unknown as ApiResponse<AttendanceRecord>;
+    return ensureSuccess(response as unknown as ApiResponse<AttendanceRecord>);
   },
 
   /**
@@ -93,7 +100,7 @@ export const attendanceService = {
       '/users/attendance/end',
       {}
     );
-    return response as unknown as ApiResponse<AttendanceRecord>;
+    return ensureSuccess(response as unknown as ApiResponse<AttendanceRecord>);
   },
 
   /**
@@ -103,7 +110,7 @@ export const attendanceService = {
     const response = await axiosClient.get<ApiResponse<AttendanceRecord[]>>(
       '/users/attendance'
     );
-    return response as unknown as ApiResponse<AttendanceRecord[]>;
+    return ensureSuccess(response as unknown as ApiResponse<AttendanceRecord[]>);
   },
 
   syncLocation: async (
@@ -125,13 +132,13 @@ export const attendanceService = {
         },
       }
     );
-    return response as unknown as ApiResponse<{
+    return ensureSuccess(response as unknown as ApiResponse<{
       action: 'paused' | 'resumed' | 'already_paused' | 'updated' | 'remote_allowed';
       withinRadius: boolean;
       distanceFromOfficeMeters: number | null;
       allowedRadiusMeters: number | null;
       attendance: AttendanceRecord;
-    }>;
+    }>);
   },
 
   /**
@@ -148,7 +155,7 @@ export const attendanceService = {
       '/users/attendance/break/start',
       payload
     );
-    return response as unknown as ApiResponse<any>;
+    return ensureSuccess(response as unknown as ApiResponse<any>);
   },
 
   /**
@@ -159,6 +166,6 @@ export const attendanceService = {
       '/users/attendance/break/end',
       {}
     );
-    return response as unknown as ApiResponse<any>;
+    return ensureSuccess(response as unknown as ApiResponse<any>);
   },
 };

@@ -21,6 +21,11 @@ type UpdateProfilePayload = {
   photoBase64?: string;
 };
 
+type UpdateProfileResult = {
+  user: UserProfile;
+  message: string;
+};
+
 interface AuthState {
   user: UserProfile | null;
   token: string | null;
@@ -113,7 +118,7 @@ export const logoutUser = createAsyncThunk(
 );
 
 export const updateMyProfile = createAsyncThunk<
-  UserProfile,
+  UpdateProfileResult,
   UpdateProfilePayload,
   { rejectValue: string }
 >(
@@ -135,7 +140,10 @@ export const updateMyProfile = createAsyncThunk<
 
       const response = await axios.put(`${BASE_URL}/users/me`, payload);
       if (response.data?.success) {
-        return response.data.data;
+        return {
+          user: response.data.data,
+          message: response.data.message || 'Profile updated successfully',
+        };
       }
       return rejectWithValue(response.data?.message || 'Profile update failed');
     } catch (error: any) {
@@ -201,7 +209,7 @@ const authSlice = createSlice({
       })
       .addCase(updateMyProfile.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = action.payload.user;
       })
       .addCase(updateMyProfile.rejected, (state, action) => {
         state.loading = false;
