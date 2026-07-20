@@ -1,0 +1,153 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/DMSans_18pt-Black.ttf",
+      "sha1": "e1cd542190ba429989313526235989343bcbe265"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_18pt-BlackItalic.ttf",
+      "sha1": "662767147882f453571a29f53f40f42192658e9e"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_18pt-Bold.ttf",
+      "sha1": "51e165d32011543c3d640e5eb18e2191f79c00ae"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_18pt-ExtraBold.ttf",
+      "sha1": "a1308cbc6ee0e7955cdfc173c545f7f0c865d1aa"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_18pt-ExtraLight.ttf",
+      "sha1": "a4cb32cd5b20c238d692a5032e9520fa67bbc645"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_18pt-Light.ttf",
+      "sha1": "dd027fa42b63a2793a6fd899aab0231057e6a9bb"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_18pt-Medium.ttf",
+      "sha1": "f59beef6afefdd1bdbbbae740fac9c4eddcc4c8e"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_18pt-Regular.ttf",
+      "sha1": "86153d823a4ca1201b50c34e926a1cfd5f4b6719"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_18pt-SemiBold.ttf",
+      "sha1": "e1390632b78084083d0edea41ce5dbe470baa86e"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_18pt-Thin.ttf",
+      "sha1": "3df6cab8d22dd341a7850cf034a4bec910b03b59"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_24pt-Black.ttf",
+      "sha1": "d4aa20faed40d1724b731da775705f62a1473625"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_24pt-Bold.ttf",
+      "sha1": "ddcfc70b73bf9a2e5f35d9fb99d5842b7882c348"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_24pt-ExtraBold.ttf",
+      "sha1": "319c3f15fef72b53b58221660c5f38cc10d18469"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_24pt-ExtraLight.ttf",
+      "sha1": "e32ec86c44d5c98e5217a49b8ada8a9cad6a1626"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_24pt-Light.ttf",
+      "sha1": "766433f75e5e8c208154421e8fd1fd1f9e4e352c"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_24pt-Medium.ttf",
+      "sha1": "c65cee86d8675d9b279246de83eb070cb566bf2a"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_24pt-Regular.ttf",
+      "sha1": "ad3b975f7acb79d37ac39a850d8d811a81768641"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_24pt-SemiBold.ttf",
+      "sha1": "5dae76261bcfd6e5fc636c27f874c51ff1305e99"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_24pt-Thin.ttf",
+      "sha1": "13fed978bd73256cd20a1dd6323f561b39b93adc"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_36pt-Black.ttf",
+      "sha1": "d12ae143d41efa74f06d2e16d388bc22cd3a7a80"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_36pt-Bold.ttf",
+      "sha1": "8a0266a477946b4c83710883511a41d4cd114c69"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_36pt-ExtraBold.ttf",
+      "sha1": "47b9116adbf17a1780ca803cac301b3ab1a70a0a"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_36pt-ExtraLight.ttf",
+      "sha1": "51ab96da7d5aa8100bfd85035310d78a77d252c6"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_36pt-Light.ttf",
+      "sha1": "8eeb467b2b74036b445a2ed340f4b56153d9ce70"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_36pt-Medium.ttf",
+      "sha1": "a0d1a29f9118dcfad115a00f0a89be94a247f87a"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_36pt-Regular.ttf",
+      "sha1": "b6404ccec533390ef636f290f83155ab73a700ff"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_36pt-SemiBold.ttf",
+      "sha1": "dc023252919d854bbd86cf0121520d69cf0ef9cf"
+    },
+    {
+      "path": "src/assets/fonts/DMSans_36pt-Thin.ttf",
+      "sha1": "42fe975fe0697ff145b4868283e8ac89d084f8f6"
+    },
+    {
+      "path": "src/assets/fonts/DMSans-Black.ttf",
+      "sha1": "928765ebc49e7c22a223052891a9b7e9c1ced790"
+    },
+    {
+      "path": "src/assets/fonts/DMSans-Bold.ttf",
+      "sha1": "10e061ac7f01fd542e0c1956e89b12a272607f5d"
+    },
+    {
+      "path": "src/assets/fonts/DMSans-ExtraBold.ttf",
+      "sha1": "283ba20eb28248c93a2f109c6694c2aaa1107561"
+    },
+    {
+      "path": "src/assets/fonts/DMSans-ExtraLight.ttf",
+      "sha1": "c88b3ca1abf5b2073b98c8ad52747ba26230f755"
+    },
+    {
+      "path": "src/assets/fonts/DMSans-Light.ttf",
+      "sha1": "5c144a0909fca26b32c9d5a42cd85e18f7ca924f"
+    },
+    {
+      "path": "src/assets/fonts/DMSans-Medium.ttf",
+      "sha1": "dad2637623defedd4720447c5bbaa3d96b1594ee"
+    },
+    {
+      "path": "src/assets/fonts/DMSans-Regular.ttf",
+      "sha1": "76c500a4e46a2ef4252e909109926e08272ac849"
+    },
+    {
+      "path": "src/assets/fonts/DMSans-SemiBold.ttf",
+      "sha1": "d0f49c8f35f1155a2c0a945051319e134d3ba0cf"
+    },
+    {
+      "path": "src/assets/fonts/DMSans-Thin.ttf",
+      "sha1": "064ce26456e9ec9ba9e8d01ef953ab2ec99fdc81"
+    }
+  ]
+}
