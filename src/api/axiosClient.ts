@@ -59,7 +59,7 @@ axiosClient.interceptors.response.use(
     // Log success
 
 
-    console.log("===========================",response)
+    // console.log("===============response============",response)
     console.log(`✅ [${response.status}] Response from: ${response.config.url}`);
     
     // Return only the data portion to your services
@@ -67,7 +67,7 @@ axiosClient.interceptors.response.use(
   },
   async (error: AxiosError) => {
 
-console.log("=========+++++++++++====",error.response)
+console.log("=========error====",error.response)
 
 
     const status = error.response?.status;

@@ -15,9 +15,12 @@ import {
 } from 'react-native';
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import { AttendanceRecord, attendanceService } from '../../api/services/apiService';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { UserProfile } from '../../types/user';
-import { Header } from '../../components';
+import { ConfirmationModal, Header, HistoryCard } from '../../components';
+import styles from './styles.history';
+import { useNavigation } from '@react-navigation/native';
+import { logoutUser } from '../../redux/slices/authSlice';
 
 interface StatusConfig {
   label: string;
@@ -40,6 +43,8 @@ const HistoryScreen = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<any>();
+  const navigation = useNavigation<any>();
 
 
   useEffect(() => {
@@ -65,13 +70,7 @@ const HistoryScreen = () => {
     fetchHistory();
   };
 
-  // Human-readable format conversion: e.g., 273 minutes -> 4h 33m
-  const formatMinutes = (totalMinutes?: number): string => {
-    if (!totalMinutes || totalMinutes <= 0) return '0m';
-    const hrs = Math.floor(totalMinutes / 60);
-    const mins = totalMinutes % 60;
-    return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-  };
+
 
   const getTodayString = (): string => {
     return new Date().toISOString().split('T')[0];
@@ -110,68 +109,14 @@ const HistoryScreen = () => {
   };
 
   const renderItem: ListRenderItem<AttendanceRecord> = ({ item }) => {
-    const statusCfg = getStatusConfig(item.status);
-
-    const clockIn = item.loginAt
-      ? new Date(item.loginAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
-      : '--:--';
-    const clockOut = item.logoutAt
-      ? new Date(item.logoutAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
-      : '--:--';
-
-    let displayDate = item.dateKey;
-    try {
-      const parsedDate = new Date(item.dateKey);
-      if (!isNaN(parsedDate.getTime())) {
-        displayDate = parsedDate.toLocaleDateString([], {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        });
-      }
-    } catch (e) {
-      console.log('Date formatting error:', e);
-    }
-
-    return (
-      <View style={[styles.historyCard, { borderLeftColor: statusCfg.color }]}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.dateText}>{displayDate}</Text>
-          <View style={[styles.badge, { backgroundColor: statusCfg.bg }]}>
-            <Text style={[styles.badgeText, { color: statusCfg.color }]}>
-              {statusCfg.label}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.cardContent}>
-          <View style={styles.metricColumn}>
-            <Text style={styles.metricLabel}>In</Text>
-            <Text style={styles.metricValue}>{clockIn}</Text>
-          </View>
-
-          <View style={styles.metricColumn}>
-            <Text style={styles.metricLabel}>Out</Text>
-            <Text style={styles.metricValue}>{clockOut}</Text>
-          </View>
-
-          <View style={styles.metricColumn}>
-            <Text style={styles.metricLabel}>Work Time</Text>
-            <Text style={styles.metricValue}>
-              {formatMinutes(item.totalWorkMinutes)}
-            </Text>
-          </View>
-
-          <View style={styles.metricColumn}>
-            <Text style={styles.metricLabel}>Break Time</Text>
-            <Text style={styles.metricValue}>
-              {formatMinutes(item.totalBreakMinutes)}
-            </Text>
-          </View>
-        </View>
-      </View>
-    );
+    return <HistoryCard item={item} />;
   };
+  const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
+
+  const handleLogout = () => {
+    setShowLogoutModal(!showLogoutModal)
+  }
+
 
   return (
     <View style={styles.safeContainer}>
@@ -179,6 +124,8 @@ const HistoryScreen = () => {
         {/* Place the custom header here */}
         <Header
           user={user}
+          onLogout={handleLogout}
+
         />
 
         {/* Screen Header */}
@@ -245,154 +192,32 @@ const HistoryScreen = () => {
           />
         )}
       </View>
+
+      <ConfirmationModal
+        isVisible={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={() => {
+          // 1. Close the modal
+          setShowLogoutModal(false);
+
+          // 2. Execute the logout function
+          dispatch(logoutUser());
+
+          // 3. Reset the navigation stack
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Login' }], // Replace 'Login' with your actual login route name
+          });
+        }} title="Logout"
+        description="Are you sure you want to Logout?"
+        confirmText="Log-Out"
+        cancelText="Cancel"
+        type="danger"
+      />
     </View>
   );
 }
 
 export default HistoryScreen
 
-const styles = StyleSheet.create({
-  safeContainer: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  container: {
-    flex: 1,
-    padding: SPACING.lg,
-  },
-  header: {
-    marginBottom: SPACING.md,
-  },
-  titleText: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.title,
-    color: COLORS.textPrimary,
-  },
-  subtitleText: {
-    fontFamily: FONTS.regular,
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  filterBar: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.grey100,
-    borderRadius: RADIUS.round,
-    padding: 4,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  filterTab: {
-    flex: 1,
-    paddingVertical: SPACING.sm,
-    alignItems: 'center',
-    borderRadius: RADIUS.round,
-  },
-  filterTabActive: {
-    backgroundColor: COLORS.surface,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  filterTabText: {
-    fontFamily: FONTS.medium,
-    fontSize: 10,
-    color: COLORS.textSecondary,
-    letterSpacing: 0.5,
-  },
-  filterTabTextActive: {
-    fontFamily: FONTS.bold,
-    color: COLORS.primary,
-  },
-  listContent: {
-    paddingBottom: SPACING.xl,
-  },
-  historyCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderLeftWidth: 4, // Subtle status indicator accent bar
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
-    paddingBottom: SPACING.sm,
-    marginBottom: SPACING.sm,
-  },
-  dateText: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.md,
-    color: COLORS.textPrimary,
-  },
-  badge: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 2,
-    borderRadius: RADIUS.xs,
-  },
-  badgeText: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.xs,
-  },
-  cardContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  metricColumn: {
-    alignItems: 'flex-start',
-    flex: 1,
-  },
-  metricLabel: {
-    fontFamily: FONTS.medium,
-    fontSize: FONT_SIZE.xs,
-    color: COLORS.textLight,
-    marginBottom: 2,
-  },
-  metricValue: {
-    fontFamily: FONTS.semiBold,
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textPrimary,
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loaderText: {
-    fontFamily: FONTS.medium,
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.sm,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingVertical: SPACING.xxxl,
-  },
-  emptyText: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: SPACING.xs,
-  },
-  emptySubText: {
-    fontFamily: FONTS.regular,
-    fontSize: FONT_SIZE.xs,
-    color: COLORS.textLight,
-    textAlign: 'center',
-    paddingHorizontal: SPACING.lg,
-  },
-});
+

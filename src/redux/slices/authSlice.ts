@@ -31,6 +31,9 @@ export const checkStoredToken = createAsyncThunk<AuthPayload, void, { rejectValu
         axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
         const response = await axios.get(`${BASE_URL}/users/me`);
         const userData = response.data.data || response.data;
+
+
+        console.log("=====checkStoredToken==",userData)
         return { token: savedToken, user: userData };
       }
       return { token: null, user: null };
@@ -43,20 +46,52 @@ export const checkStoredToken = createAsyncThunk<AuthPayload, void, { rejectValu
 );
 
 // Thunk for Logging In
+// export const loginUser = createAsyncThunk<AuthPayload, LoginPayload, { rejectValue: string }>(
+//   'auth/loginUser',
+//   async ({ email, password }, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.post(`${BASE_URL}/users/login`, { email, password });
+//       if (response.data.success) {
+//                 console.log("=====loginUser==",response.data.data)
+
+//          const { token, ...userData } = response.data.data || response.data;
+//         await AsyncStorage.setItem('userToken', token);
+//         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+//         return { token, user: userData };
+//       }
+//       return rejectWithValue(response.data.message || 'Login failed');
+//     } catch (error: any) {
+//       return rejectWithValue(error.response?.data?.message || 'Network error occurred');
+//     }
+//   }
+// );
+
+
+// src/redux/authSlice.js
+
 export const loginUser = createAsyncThunk<AuthPayload, LoginPayload, { rejectValue: string }>(
   'auth/loginUser',
   async ({ email, password }, { rejectWithValue }) => {
     try {
+      // 1. Authenticate
       const response = await axios.post(`${BASE_URL}/users/login`, { email, password });
+      
       if (response.data.success) {
-        const { token, ...userData } = response.data.data;
+        const { token } = response.data.data;
+        
+        // 2. Save token and set header for the next immediate call
         await AsyncStorage.setItem('userToken', token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        return { token, user: userData };
+
+        // 3. Fetch the FULL profile immediately
+        const profileResponse = await axios.get(`${BASE_URL}/users/me`);
+        const fullUserData = profileResponse.data.data || profileResponse.data;
+
+        return { token, user: fullUserData };
       }
       return rejectWithValue(response.data.message || 'Login failed');
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Network error occurred');
+      return rejectWithValue(error.response?.data?.message || 'Network error');
     }
   }
 );

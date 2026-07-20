@@ -24,12 +24,16 @@ import {
 } from 'lucide-react-native';
 
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
-import { logoutUser } from '../../redux/slices/authSlice';
+import { checkStoredToken, logoutUser } from '../../redux/slices/authSlice';
 import { requestAppPermissions } from '../../utils/permissionUtils';
 import { UserProfile } from '../../types/user';
 import { AttendanceRecord, attendanceService, BreakType } from '../../api/services/apiService';
 import { ConfirmationModal, Header } from '../../components';
 import { useNavigation } from '@react-navigation/native';
+import TimerMainCard from './TimerMainCard';
+import ProfileCollapsibleCard from './ProfileCollapsibleCard';
+import TodaystimeLines from './TodaystimeLines';
+import styles from './styles.dashboard';
 
 interface AuthState {
   user: UserProfile | null;
@@ -52,8 +56,7 @@ export default function DashboardScreen() {
   const { user } = useSelector((state: RootState) => state.auth);
   const navigation = useNavigation<any>();
 
-  // console.log("====111111111111111====",user)
-
+ 
   const [loading, setLoading] = useState<boolean>(false);
   const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
 
@@ -134,6 +137,10 @@ export default function DashboardScreen() {
     // Foreground refresh should only depend on attendance running state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todayRecord?.status]);
+
+
+ 
+
 
   const fetchTodayStatus = async () => {
     try {
@@ -515,69 +522,11 @@ export default function DashboardScreen() {
         )}
 
         {/* Attendance Timer Display Grid */}
-        <View style={styles.timerMainCard}>
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }} >
-            <Image source={{ uri: TodaysSelfie }} resizeMode="contain" style={styles.selfieImage} />
 
-            <View >
-              <Text style={styles.sectionHeaderTitle}>Attendance Timer</Text>
-              <Text style={styles.sectionHeaderSub}>Live tracker for today's activity sessions</Text>
-            </View>
-          </View>
-          <View style={styles.progressTrack}>
-            <View
-              style={[
-                styles.progressWorkFill,
-                progress.complete && styles.progressCompleteFill,
-                { width: `${progress.workPercent}%` },
-              ]}
-            />
-            <View
-              style={[
-                styles.progressBreakFill,
-                {
-                  left: `${progress.workPercent}%`,
-                  width: `${progress.breakPercent}%`,
-                },
-              ]}
-            />
-            <View style={styles.progressCenterText}>
-              <Text style={styles.progressValue}>{totalTime}</Text>
-              <Text style={styles.progressLabel}>TOTAL TIME</Text>
-            </View>
-          </View>
+        <TimerMainCard
+          progress={progress} TodaysSelfie={TodaysSelfie} totalTime={totalTime} workTime={workTime} breakTime={breakTime}
 
-          <View style={styles.progressLegendRow}>
-            <View style={styles.legendItem}>
-              <View
-                style={[
-                  styles.legendDot,
-                  { backgroundColor: progress.complete ? COLORS.success : COLORS.primary },
-                ]}
-              />
-              <Text style={styles.legendText}>Work {workTime}</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: COLORS.warning }]} />
-              <Text style={styles.legendText}>Break {breakTime}</Text>
-            </View>
-            <Text style={styles.targetText}>Target 08:30:00</Text>
-          </View>
-
-          <View style={styles.timersGrid}>
-            <View style={styles.timerCard}>
-              <Text style={styles.timerLabel}>WORK TIME</Text>
-              <Text style={[styles.timerValue, { color: COLORS.success }]}>{workTime}</Text>
-              <Text style={styles.timerDesc}>Total minus breaks</Text>
-            </View>
-
-            <View style={styles.timerCard}>
-              <Text style={styles.timerLabel}>BREAK TIME</Text>
-              <Text style={[styles.timerValue, { color: COLORS.warning }]}>{breakTime}</Text>
-              <Text style={styles.timerDesc}>Total breaks used</Text>
-            </View>
-          </View>
-        </View>
+        />
 
         {/* Primary Today's Attendance Operations Control */}
         <View style={styles.controlCard}>
@@ -656,77 +605,15 @@ export default function DashboardScreen() {
 
         {/* Sequential Timeline Node List */}
         {todayRecord && timelineEvents.length > 0 && (
-          <View style={styles.timelineCard}>
-            <Text style={styles.cardSectionHeader}>Today's Timeline</Text>
-            <View style={styles.timelineContainer}>
-              {timelineEvents.map((ev, idx) => (
-                <View key={ev.id} style={styles.timelineRow}>
-                  <View style={styles.timelineLeftTrack}>
-                    <View style={styles.timelineNodePoint} />
-                    {idx !== timelineEvents.length - 1 && <View style={styles.timelineTrackLine} />}
-                  </View>
-                  <View style={styles.timelineRightContent}>
-                    <Text style={styles.timelineNodeTitle}>{ev.title}</Text>
-                    <Text style={styles.timelineNodeTime}>{ev.time}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
+          <TodaystimeLines timelineEvents={timelineEvents} />
         )}
 
         {/* User Profile Info Panel */}
-        <View style={styles.profileCollapsibleCard}>
-          <TouchableOpacity
-            style={styles.profileHeaderRow}
-            onPress={() => setIsProfileCollapsed(!isProfileCollapsed)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.profileHeaderLabelBlock}>
-              <User size={20} color={COLORS.primary} style={{ marginRight: SPACING.sm }} />
-              <Text style={styles.profileCardTitle}>My Profile Overview</Text>
-            </View>
-            {isProfileCollapsed ? <ChevronDown size={20} color={COLORS.textSecondary} /> : <ChevronUp size={20} color={COLORS.textSecondary} />}
-          </TouchableOpacity>
 
-          {!isProfileCollapsed && (
-            <View style={styles.profileCollapsedBody}>
-              <View style={styles.profileGridItem}>
-                <Text style={styles.profileFieldLabel}>Employee ID</Text>
-                <Text style={styles.profileFieldValue}>{user?.employeeProfile?.employeeId || 'N/A'}</Text>
-              </View>
 
-              <View style={styles.profileGridItem}>
-                <Text style={styles.profileFieldLabel}>Department</Text>
-                <Text style={styles.profileFieldValue}>{user?.employeeProfile?.department || 'N/A'}</Text>
-              </View>
-
-              <View style={styles.profileGridItem}>
-                <Text style={styles.profileFieldLabel}>Designation</Text>
-                <Text style={styles.profileFieldValue}>{user?.employeeProfile?.designation || 'N/A'}</Text>
-              </View>
-
-              <View style={styles.profileGridItem}>
-                <Text style={styles.profileFieldLabel}>Joining Date</Text>
-                <Text style={styles.profileFieldValue}>
-                  {user?.employeeProfile?.dateOfJoining
-                    ? new Date(user.employeeProfile.dateOfJoining).toLocaleDateString()
-                    : 'N/A'}
-                </Text>
-              </View>
-
-              <View style={styles.profileGridItem}>
-                <Text style={styles.profileFieldLabel}>Reporting Manager</Text>
-                <Text style={styles.profileFieldValue}>{user?.employeeProfile?.reportingManager || 'N/A'}</Text>
-              </View>
-
-              <View style={styles.profileGridItem}>
-                <Text style={styles.profileFieldLabel}>Emp Type</Text>
-                <Text style={styles.profileFieldValue}>{user?.employeeProfile?.employeeType || 'N/A'}</Text>
-              </View>
-            </View>
-          )}
-        </View>
+        <ProfileCollapsibleCard
+          user={user} setIsProfileCollapsed={setIsProfileCollapsed} isProfileCollapsed={isProfileCollapsed}
+        />
 
         {/* Global Exit Trigger */}
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
@@ -779,410 +666,3 @@ export default function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeContainer: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  container: {
-    padding: SPACING.md,
-    paddingBottom: 112,
-    flexGrow: 1,
-  },
-  warningBanner: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#FCA5A5',
-    borderWidth: 1,
-    borderRadius: RADIUS.md,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-  },
-  warningRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.xs,
-  },
-  warningTitle: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.md,
-    color: COLORS.error,
-  },
-  warningText: {
-    fontFamily: FONTS.regular,
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.grey700,
-    lineHeight: 18,
-  },
-  timerMainCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
-  },
-  progressTrack: {
-    height: 58,
-    borderRadius: 999,
-    overflow: 'hidden',
-    backgroundColor: COLORS.grey200,
-    justifyContent: 'center',
-    marginBottom: SPACING.sm,
-    position: 'relative',
-  },
-  progressWorkFill: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    backgroundColor: COLORS.primary,
-  },
-  progressCompleteFill: {
-    backgroundColor: COLORS.success,
-  },
-  progressBreakFill: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    backgroundColor: COLORS.warning,
-  },
-  progressCenterText: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  progressValue: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.xl,
-    color: COLORS.white,
-  },
-  progressLabel: {
-    fontFamily: FONTS.semiBold,
-    fontSize: 9,
-    color: COLORS.white,
-    marginTop: 1,
-  },
-  progressLegendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    marginBottom: SPACING.sm,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: SPACING.sm,
-    marginBottom: 4,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 5,
-  },
-  legendText: {
-    fontFamily: FONTS.medium,
-    fontSize: FONT_SIZE.xs,
-    color: COLORS.textSecondary,
-  },
-  targetText: {
-    fontFamily: FONTS.semiBold,
-    fontSize: FONT_SIZE.xs,
-    color: COLORS.textPrimary,
-    marginBottom: 4,
-  },
-  selfieImage: {
-    height: 50, width: 50,
-    borderRadius: 100,
-    marginRight: SPACING.sm
-  },
-  sectionHeaderTitle: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.lg,
-    color: COLORS.textPrimary,
-  },
-  sectionHeaderSub: {
-    fontFamily: FONTS.regular,
-    fontSize: FONT_SIZE.xs,
-    color: COLORS.textSecondary,
-
-  },
-  timersGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  timerCard: {
-    flex: 1,
-    backgroundColor: COLORS.grey50,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.sm,
-    padding: SPACING.sm,
-    marginHorizontal: 3,
-    alignItems: 'center',
-  },
-  timerLabel: {
-    fontFamily: FONTS.medium,
-    fontSize: 9,
-    color: COLORS.textLight,
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  timerValue: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.lg,
-    marginBottom: 4,
-  },
-  timerDesc: {
-    fontFamily: FONTS.regular,
-    fontSize: 8,
-    color: COLORS.textSecondary,
-  },
-  controlCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
-  },
-  controlTitle: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.md,
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
-    paddingBottom: SPACING.xs,
-  },
-  clockInContainer: {
-    alignItems: 'center',
-    paddingVertical: SPACING.lg,
-  },
-  clockInPrompt: {
-    fontFamily: FONTS.medium,
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.md,
-  },
-  primaryClockInBtn: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.xxl,
-    borderRadius: RADIUS.round,
-    width: '80%',
-    alignItems: 'center',
-  },
-  clockInBtnText: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.md,
-    color: COLORS.white,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.grey50,
-    padding: SPACING.sm,
-    borderRadius: RADIUS.sm,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.divider,
-  },
-  summaryLabel: {
-    fontFamily: FONTS.regular,
-    fontSize: FONT_SIZE.xs,
-    color: COLORS.textSecondary,
-  },
-  summaryVal: {
-    fontFamily: FONTS.bold,
-    color: COLORS.textPrimary,
-  },
-  attendanceActionsBlock: {
-    marginTop: SPACING.xs,
-  },
-  endWorkBtn: {
-    backgroundColor: COLORS.error,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.sm,
-    alignItems: 'center',
-  },
-  dividerLine: {
-    height: 1,
-    backgroundColor: COLORS.divider,
-    marginVertical: SPACING.md,
-  },
-  breakSelectionTitle: {
-    fontFamily: FONTS.medium,
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
-  },
-  pillsScroll: {
-    marginBottom: SPACING.md,
-    paddingVertical: 2,
-  },
-  pill: {
-    backgroundColor: COLORS.grey100,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.round,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    marginRight: SPACING.sm,
-  },
-  pillSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  pillText: {
-    fontFamily: FONTS.medium,
-    fontSize: FONT_SIZE.xs,
-    color: COLORS.textSecondary,
-  },
-  pillTextSelected: {
-    color: COLORS.white,
-  },
-  breakToggleBtn: {
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.sm,
-    alignItems: 'center',
-  },
-  startBreakBtnColor: {
-    backgroundColor: COLORS.warning,
-  },
-  endBreakBtnColor: {
-    backgroundColor: COLORS.success,
-  },
-  actionBtnText: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.white,
-  },
-  timelineCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  cardSectionHeader: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.md,
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.md,
-  },
-  timelineContainer: {
-    paddingLeft: SPACING.xs,
-  },
-  timelineRow: {
-    flexDirection: 'row',
-    height: 52,
-  },
-  timelineLeftTrack: {
-    alignItems: 'center',
-    marginRight: SPACING.md,
-    width: 14,
-  },
-  timelineNodePoint: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.primary,
-    zIndex: 2,
-    marginTop: 4,
-  },
-  timelineTrackLine: {
-    width: 2,
-    flex: 1,
-    backgroundColor: COLORS.border,
-    marginVertical: 2,
-  },
-  timelineRightContent: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 1,
-  },
-  timelineNodeTitle: {
-    fontFamily: FONTS.medium,
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textPrimary,
-    textTransform: 'capitalize',
-  },
-  timelineNodeTime: {
-    fontFamily: FONTS.regular,
-    fontSize: FONT_SIZE.xs,
-    color: COLORS.textSecondary,
-  },
-  profileCollapsibleCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: SPACING.lg,
-    overflow: 'hidden',
-  },
-  profileHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: SPACING.md,
-    backgroundColor: COLORS.grey50,
-  },
-  profileHeaderLabelBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  profileCardTitle: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.md,
-    color: COLORS.textPrimary,
-  },
-  profileCollapsedBody: {
-    padding: SPACING.md,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  profileGridItem: {
-    width: '48%',
-    marginBottom: SPACING.md,
-  },
-  profileFieldLabel: {
-    fontFamily: FONTS.medium,
-    fontSize: FONT_SIZE.xs,
-    color: COLORS.textLight,
-    marginBottom: 2,
-  },
-  profileFieldValue: {
-    fontFamily: FONTS.semiBold,
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textPrimary,
-  },
-  logoutBtn: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.error,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.sm,
-    marginBottom: SPACING.xl,
-  },
-  logoutBtnText: {
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.md,
-    color: COLORS.error,
-  },
-});

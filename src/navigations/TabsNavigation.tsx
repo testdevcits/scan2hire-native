@@ -1,5 +1,5 @@
 // src/navigation/TabsNavigation.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LayoutDashboard, History } from 'lucide-react-native';
@@ -8,7 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, FONTS } from '../constants';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import HistoryScreen from '../screens/history/HistoryScreen';
-
+import { useDispatch } from 'react-redux';
+ 
 export type BottomTabParamList = {
   Dashboard: undefined;
   History: undefined;
@@ -21,7 +22,9 @@ const TabsNavigation = () => {
   const brandPrimary = COLORS.primary;
   const brandInactive = COLORS.lightGrey;
   const insets = useSafeAreaInsets();
+ 
 
+ 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -37,7 +40,7 @@ const TabsNavigation = () => {
           },
         ],
         tabBarShowLabel: true,
-        
+
         tabBarLabelStyle: {
           fontFamily: FONTS.semiBold,
           fontSize: 10,
@@ -78,7 +81,7 @@ const TabsNavigation = () => {
                 )}
               </View>
               {/* Refined active indicator dot */}
-              {focused && <View style={styles.activeDot} />}
+              {/* {focused && <View style={styles.activeDot} />} */}
             </View>
           );
         },
@@ -115,7 +118,7 @@ const styles = StyleSheet.create({
     borderRadius: 0,
 
     backgroundColor: COLORS.surface,
-    
+
     // Thin borders using brand divider constant
     borderTopWidth: 1,
     borderTopColor: COLORS.divider,
@@ -124,15 +127,15 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 16 : 8,
 
     // Premium warm-glow drop shadow
-    shadowColor: COLORS.primary,
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
+    // shadowColor: COLORS.primary,
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 8,
+    // },
+    // shadowOpacity: 0.08,
+    // shadowRadius: 20,
 
-    elevation: 8,
+    // elevation: 8,
   },
 
   iconContainer: {
@@ -151,7 +154,7 @@ const styles = StyleSheet.create({
 
   activeIconWrapper: {
     // 8% opacity of brand primary color (#F84525) dynamically calculated
-    backgroundColor: `${COLORS.primary}14`, 
+    backgroundColor: `${COLORS.primary}14`,
   },
 
   activeDot: {
