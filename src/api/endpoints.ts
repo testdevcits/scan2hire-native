@@ -1,5 +1,5 @@
 // endpoints.ts
 
 export default {
-    LOGIN:"/api/driver/driver/login"
+    LOGIN: "/users/login",
 }

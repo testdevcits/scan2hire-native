@@ -5,6 +5,15 @@ import axios from 'axios';
 import { BASE_URL } from '../../config/apiConfig';
 import { UserProfile } from '../../types/user';
 
+type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+type AuthPayload = {
+  token: string | null;
+  user: UserProfile | null;
+};
 
 interface AuthState {
   user: UserProfile | null;
@@ -13,19 +22,19 @@ interface AuthState {
   error: string | null;
 }
 // Thunk to check if a token exists on startup
-export const checkStoredToken = createAsyncThunk(
+export const checkStoredToken = createAsyncThunk<AuthPayload, void, { rejectValue: string }>(
   'auth/checkStoredToken',
   async (_, { rejectWithValue }) => {
     try {
       const savedToken = await AsyncStorage.getItem('userToken');
       if (savedToken) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
-        const response = await axios.get(`${BASE_URL}/employees/me`);
+        const response = await axios.get(`${BASE_URL}/users/me`);
         const userData = response.data.data || response.data;
         return { token: savedToken, user: userData };
       }
       return { token: null, user: null };
-    } catch (error) {
+    } catch (error: any) {
       await AsyncStorage.removeItem('userToken');
       delete axios.defaults.headers.common['Authorization'];
       return rejectWithValue(error.response?.data?.message || 'Session expired');
@@ -34,7 +43,7 @@ export const checkStoredToken = createAsyncThunk(
 );
 
 // Thunk for Logging In
-export const loginUser = createAsyncThunk(
+export const loginUser = createAsyncThunk<AuthPayload, LoginPayload, { rejectValue: string }>(
   'auth/loginUser',
   async ({ email, password }, { rejectWithValue }) => {
     try {
@@ -46,7 +55,7 @@ export const loginUser = createAsyncThunk(
         return { token, user: userData };
       }
       return rejectWithValue(response.data.message || 'Login failed');
-    } catch (error) {
+    } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Network error occurred');
     }
   }
@@ -69,7 +78,7 @@ const authSlice = createSlice({
     token: null,
     loading: true,
     error: null,
-  },
+  } as AuthState,
   reducers: {
     clearError: (state) => {
       state.error = null;
@@ -91,7 +100,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.token = null;
         state.user = null;
-        state.error = action.payload;
+        state.error = (action.payload as string) || 'Session expired';
       })
       // Login lifecycle
       .addCase(loginUser.pending, (state) => {
@@ -105,7 +114,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = (action.payload as string) || 'Login failed';
       })
       // Logout lifecycle
       .addCase(logoutUser.fulfilled, (state) => {

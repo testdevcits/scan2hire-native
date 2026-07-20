@@ -37,6 +37,7 @@ const Header = ({
     };
 
     const profileUrl = user?.profileImage;
+    const employeeId = user?.employeeProfile?.employeeId || 'N/A';
 
     return (
         <View style={styles.container}>
@@ -55,7 +56,7 @@ const Header = ({
                         {user?.name}
                     </Text>
                     <Text style={styles.empIdText}>
-                        ID: {user?.employeeId || 'N/A'}
+                        ID: {employeeId}
                     </Text>
                 </View>
             </View>
@@ -107,7 +108,7 @@ const Header = ({
 
                         <TouchableOpacity
                             style={[styles.menuItem]}
-                            onPress={() => handleMenuAction(onLogout)}
+                            onPress={() => onLogout && handleMenuAction(onLogout)}
                         >
                             <LogOut size={16} color={COLORS.error} style={styles.menuItemIcon} />
                             <Text style={[styles.menuItemText, { color: COLORS.error }]}>Log Out</Text>

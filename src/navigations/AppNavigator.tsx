@@ -1,7 +1,6 @@
 // src/navigation/AppNavigator.js
 import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSelector, useDispatch } from 'react-redux';
 
 import LoginScreen from '../screens/login/Login';
@@ -10,11 +9,17 @@ import TabsNavigation from './TabsNavigation';
 import SplashScreen from '../screens/splash/Splash';
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
+
+type RootState = {
+  auth: {
+    token: string | null;
+    loading: boolean;
+  };
+};
 
 export default function AppNavigator() {
-  const dispatch = useDispatch();
-  const { token, loading } = useSelector((state) => state.auth);
+  const dispatch = useDispatch<any>();
+  const { token, loading } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     dispatch(checkStoredToken());

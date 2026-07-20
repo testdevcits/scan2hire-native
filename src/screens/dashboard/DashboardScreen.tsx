@@ -9,6 +9,8 @@ import {
   ScrollView,
   ActivityIndicator,
   Image,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Geolocation from 'react-native-geolocation-service';
@@ -48,7 +50,7 @@ interface TimelineEvent {
 export default function DashboardScreen() {
   const dispatch = useDispatch<any>();
   const { user } = useSelector((state: RootState) => state.auth);
-  const navigation =useNavigation()
+  const navigation = useNavigation<any>();
 
   // console.log("====111111111111111====",user)
 
@@ -62,7 +64,7 @@ export default function DashboardScreen() {
   const [totalTime, setTotalTime] = useState<string>('00:00:00');
   const [workTime, setWorkTime] = useState<string>('00:00:00');
   const [breakTime, setBreakTime] = useState<string>('00:00:00');
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Break Selector & Profile Collapse State
   const [selectedBreakType, setSelectedBreakType] = useState<BreakType>('lunch');
@@ -75,6 +77,9 @@ export default function DashboardScreen() {
 
 
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
+  const locationSyncRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const locationSyncBusyRef = useRef<boolean>(false);
+  const lastLocationActionRef = useRef<string | null>(null);
 
 
   // Break options definition
@@ -88,7 +93,10 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     fetchTodayStatus();
-    return () => stopTimer();
+    return () => {
+      stopTimer();
+      stopLocationSync();
+    };
   }, []);
 
   useEffect(() => {
@@ -98,7 +106,34 @@ export default function DashboardScreen() {
       stopTimer();
       calculateStaticTimes();
     }
+    // Timer uses the latest todayRecord snapshot and is restarted intentionally here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todayRecord, onBreak]);
+
+  useEffect(() => {
+    if (todayRecord?.status === 'running') {
+      startLocationSync();
+    } else {
+      stopLocationSync();
+    }
+
+    return () => stopLocationSync();
+    // Location polling must start/stop only when running status changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todayRecord?.status]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state: AppStateStatus) => {
+      if (state === 'active' && todayRecord?.status === 'running') {
+        syncCurrentLocation(true);
+        fetchTodayStatus();
+      }
+    });
+
+    return () => subscription.remove();
+    // Foreground refresh should only depend on attendance running state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todayRecord?.status]);
 
   const fetchTodayStatus = async () => {
     try {
@@ -119,7 +154,11 @@ export default function DashboardScreen() {
           }
         } else {
           setTodayRecord(null);
+          setOnBreak(false);
         }
+      } else {
+        setTodayRecord(null);
+        setOnBreak(false);
       }
     } catch (e) {
       console.log('Error fetching daily status:', e);
@@ -168,6 +207,77 @@ export default function DashboardScreen() {
     }
   };
 
+  const startLocationSync = () => {
+    stopLocationSync();
+    syncCurrentLocation(true);
+    locationSyncRef.current = setInterval(() => {
+      syncCurrentLocation(true);
+    }, 10000);
+  };
+
+  const stopLocationSync = () => {
+    if (locationSyncRef.current) {
+      clearInterval(locationSyncRef.current);
+      locationSyncRef.current = null;
+    }
+    locationSyncBusyRef.current = false;
+    lastLocationActionRef.current = null;
+  };
+
+  const syncCurrentLocation = async (silent = false) => {
+    if (!todayRecord || todayRecord.status !== 'running' || locationSyncBusyRef.current) {
+      return;
+    }
+
+    locationSyncBusyRef.current = true;
+
+    Geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const res = await attendanceService.syncLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          });
+
+          if (res.success && res.data?.attendance) {
+            setTodayRecord(res.data.attendance);
+            const activeBreak = res.data.attendance.breaks?.find((b) => !b.endAt);
+            setOnBreak(Boolean(activeBreak));
+            if (activeBreak?.type && activeBreak.type !== 'location') {
+              setSelectedBreakType(activeBreak.type as BreakType);
+            }
+          }
+
+          const action = res.data?.action;
+          if (
+            action &&
+            ['paused', 'resumed'].includes(action) &&
+            lastLocationActionRef.current !== action
+          ) {
+            lastLocationActionRef.current = action;
+            Alert.alert(action === 'paused' ? 'Work Paused' : 'Work Resumed', res.message);
+          } else if (!silent && res.message) {
+            Alert.alert('Location Synced', res.message);
+          }
+        } catch (error: any) {
+          if (!silent) {
+            Alert.alert('Location Sync Failed', error?.message || 'Unable to sync location.');
+          }
+        } finally {
+          locationSyncBusyRef.current = false;
+        }
+      },
+      () => {
+        locationSyncBusyRef.current = false;
+        if (!silent) {
+          Alert.alert('GPS Error', 'Could not fetch precise GPS. Please try again.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
+  };
+
   const calculateStaticTimes = () => {
     if (!todayRecord) {
       setTotalTime('00:00:00');
@@ -200,11 +310,30 @@ export default function DashboardScreen() {
     return [hrs, mins, secs].map((v) => (v < 10 ? '0' + v : v)).join(':');
   };
 
+  const secondsFromClock = (clock: string): number => {
+    const [hrs = '0', mins = '0', secs = '0'] = clock.split(':');
+    return Number(hrs) * 3600 + Number(mins) * 60 + Number(secs);
+  };
+
+  const getAttendanceProgress = () => {
+    const targetSeconds = 8 * 60 * 60 + 30 * 60;
+    const workSeconds = secondsFromClock(workTime);
+    const breakSeconds = secondsFromClock(breakTime);
+    const workPercent = Math.min(100, (workSeconds / targetSeconds) * 100);
+    const breakPercent = Math.min(100 - workPercent, (breakSeconds / targetSeconds) * 100);
+
+    return {
+      complete: workSeconds >= targetSeconds,
+      workPercent,
+      breakPercent,
+    };
+  };
+
   const handleStartAttendance = async () => {
     const permissionsGranted = await requestAppPermissions();
     if (!permissionsGranted) {
       return;
-    } setShowLogoutModal
+    }
 
     ImagePicker.openCamera({
       width: 500,
@@ -233,12 +362,12 @@ export default function DashboardScreen() {
                 fetchTodayStatus();
               }
             } catch (error: any) {
-              Alert.alert('Access Denied', error.response?.data?.message || 'Unable to clock in.');
+              Alert.alert('Access Denied', error?.message || 'Unable to clock in.');
             } finally {
               setLoading(false);
             }
           },
-          (err) => {
+          (_err) => {
             setLoading(false);
             Alert.alert('GPS Error', 'Could not fetch precise GPS. Please try again.');
           },
@@ -249,31 +378,24 @@ export default function DashboardScreen() {
   };
 
   const handleEndAttendance = async () => {
-    // Alert.alert('Clock Out', 'Are you sure you want to end work for today?', [
-    //   { text: 'Cancel', style: 'cancel' },
-    //   {
-    //     text: 'Confirm',
-    //     onPress: async () => {
-    //       try {
-    //         setLoading(true);
-    //         const res = await attendanceService.endAttendance();
-    //         if (res.success) {
-    //           Alert.alert('Shift Ended', 'Shift ended and records calculated successfully.');
-    //           fetchTodayStatus();
-    //         }
-    //       } catch (error: any) {
-    //         Alert.alert('Error', error.response?.data?.message || 'Checkout failed.');
-    //       } finally {
-    //         setLoading(false);
-    //       }
-    //     },
-    //   },
-    // ]);
-    setShowClockOutModal(!showClockOutModal)
+    setShowClockOutModal(true);
   };
 
-
-
+  const confirmEndAttendance = async () => {
+    try {
+      setClockOutLoading(true);
+      const res = await attendanceService.endAttendance();
+      if (res.success) {
+        setShowClockOutModal(false);
+        Alert.alert('Shift Ended', res.message || 'Attendance ended successfully.');
+        fetchTodayStatus();
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error?.message || 'Checkout failed.');
+    } finally {
+      setClockOutLoading(false);
+    }
+  };
 
   const toggleBreak = async () => {
     try {
@@ -294,7 +416,7 @@ export default function DashboardScreen() {
         }
       }
     } catch (error: any) {
-      Alert.alert('Request Failed', error.response?.data?.message || 'Transaction failed.');
+      Alert.alert('Request Failed', error?.message || 'Transaction failed.');
     } finally {
       setLoading(false);
     }
@@ -360,6 +482,7 @@ export default function DashboardScreen() {
 
   const missingDocs = getMissingDocuments();
   const timelineEvents = generateTimelineEvents();
+  const progress = getAttendanceProgress();
 
 
 
@@ -401,13 +524,47 @@ export default function DashboardScreen() {
               <Text style={styles.sectionHeaderSub}>Live tracker for today's activity sessions</Text>
             </View>
           </View>
-          <View style={styles.timersGrid}>
-            <View style={styles.timerCard}>
-              <Text style={styles.timerLabel}>TOTAL TIME</Text>
-              <Text style={[styles.timerValue, { color: COLORS.primary }]}>{totalTime}</Text>
-              <Text style={styles.timerDesc}>Login to now/end</Text>
+          <View style={styles.progressTrack}>
+            <View
+              style={[
+                styles.progressWorkFill,
+                progress.complete && styles.progressCompleteFill,
+                { width: `${progress.workPercent}%` },
+              ]}
+            />
+            <View
+              style={[
+                styles.progressBreakFill,
+                {
+                  left: `${progress.workPercent}%`,
+                  width: `${progress.breakPercent}%`,
+                },
+              ]}
+            />
+            <View style={styles.progressCenterText}>
+              <Text style={styles.progressValue}>{totalTime}</Text>
+              <Text style={styles.progressLabel}>TOTAL TIME</Text>
             </View>
+          </View>
 
+          <View style={styles.progressLegendRow}>
+            <View style={styles.legendItem}>
+              <View
+                style={[
+                  styles.legendDot,
+                  { backgroundColor: progress.complete ? COLORS.success : COLORS.primary },
+                ]}
+              />
+              <Text style={styles.legendText}>Work {workTime}</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: COLORS.warning }]} />
+              <Text style={styles.legendText}>Break {breakTime}</Text>
+            </View>
+            <Text style={styles.targetText}>Target 08:30:00</Text>
+          </View>
+
+          <View style={styles.timersGrid}>
             <View style={styles.timerCard}>
               <Text style={styles.timerLabel}>WORK TIME</Text>
               <Text style={[styles.timerValue, { color: COLORS.success }]}>{workTime}</Text>
@@ -536,43 +693,43 @@ export default function DashboardScreen() {
             <View style={styles.profileCollapsedBody}>
               <View style={styles.profileGridItem}>
                 <Text style={styles.profileFieldLabel}>Employee ID</Text>
-                <Text style={styles.profileFieldValue}>{user?.employeeId || 'N/A'}</Text>
+                <Text style={styles.profileFieldValue}>{user?.employeeProfile?.employeeId || 'N/A'}</Text>
               </View>
 
               <View style={styles.profileGridItem}>
                 <Text style={styles.profileFieldLabel}>Department</Text>
-                <Text style={styles.profileFieldValue}>{user?.department || 'N/A'}</Text>
+                <Text style={styles.profileFieldValue}>{user?.employeeProfile?.department || 'N/A'}</Text>
               </View>
 
               <View style={styles.profileGridItem}>
                 <Text style={styles.profileFieldLabel}>Designation</Text>
-                <Text style={styles.profileFieldValue}>{user?.designation || 'N/A'}</Text>
+                <Text style={styles.profileFieldValue}>{user?.employeeProfile?.designation || 'N/A'}</Text>
               </View>
 
               <View style={styles.profileGridItem}>
                 <Text style={styles.profileFieldLabel}>Joining Date</Text>
                 <Text style={styles.profileFieldValue}>
-                  {user?.dateOfJoining
-                    ? new Date(user.dateOfJoining).toLocaleDateString()
+                  {user?.employeeProfile?.dateOfJoining
+                    ? new Date(user.employeeProfile.dateOfJoining).toLocaleDateString()
                     : 'N/A'}
                 </Text>
               </View>
 
               <View style={styles.profileGridItem}>
                 <Text style={styles.profileFieldLabel}>Reporting Manager</Text>
-                <Text style={styles.profileFieldValue}>{user?.reportingManager || 'N/A'}</Text>
+                <Text style={styles.profileFieldValue}>{user?.employeeProfile?.reportingManager || 'N/A'}</Text>
               </View>
 
               <View style={styles.profileGridItem}>
                 <Text style={styles.profileFieldLabel}>Emp Type</Text>
-                <Text style={styles.profileFieldValue}>{user?.employeeType || 'N/A'}</Text>
+                <Text style={styles.profileFieldValue}>{user?.employeeProfile?.employeeType || 'N/A'}</Text>
               </View>
             </View>
           )}
         </View>
 
         {/* Global Exit Trigger */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={() => dispatch(logoutUser())}>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <LogOut size={18} color={COLORS.error} style={{ marginRight: SPACING.sm }} />
           <Text style={styles.logoutBtnText}>Log Out Session</Text>
         </TouchableOpacity>
@@ -583,7 +740,7 @@ export default function DashboardScreen() {
         <ConfirmationModal
           isVisible={showClockOutModal}
           onClose={() => setShowClockOutModal(false)}
-          onConfirm={handleEndAttendance}
+          onConfirm={confirmEndAttendance}
           title="Clock Out"
           description="Are you sure you want to end work for today?"
           confirmText="Clock-Out"
@@ -601,7 +758,7 @@ export default function DashboardScreen() {
             setShowLogoutModal(false);
 
             // 2. Execute the logout function
-            logoutUser();
+            dispatch(logoutUser());
 
             // 3. Reset the navigation stack
             navigation.reset({
@@ -629,6 +786,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: SPACING.md,
+    paddingBottom: 112,
     flexGrow: 1,
   },
   warningBanner: {
@@ -667,6 +825,76 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 1,
+  },
+  progressTrack: {
+    height: 58,
+    borderRadius: 999,
+    overflow: 'hidden',
+    backgroundColor: COLORS.grey200,
+    justifyContent: 'center',
+    marginBottom: SPACING.sm,
+    position: 'relative',
+  },
+  progressWorkFill: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: COLORS.primary,
+  },
+  progressCompleteFill: {
+    backgroundColor: COLORS.success,
+  },
+  progressBreakFill: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    backgroundColor: COLORS.warning,
+  },
+  progressCenterText: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressValue: {
+    fontFamily: FONTS.bold,
+    fontSize: FONT_SIZE.xl,
+    color: COLORS.white,
+  },
+  progressLabel: {
+    fontFamily: FONTS.semiBold,
+    fontSize: 9,
+    color: COLORS.white,
+    marginTop: 1,
+  },
+  progressLegendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    marginBottom: SPACING.sm,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: SPACING.sm,
+    marginBottom: 4,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 5,
+  },
+  legendText: {
+    fontFamily: FONTS.medium,
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textSecondary,
+  },
+  targetText: {
+    fontFamily: FONTS.semiBold,
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textPrimary,
+    marginBottom: 4,
   },
   selfieImage: {
     height: 50, width: 50,
@@ -958,6 +1186,3 @@ const styles = StyleSheet.create({
     color: COLORS.error,
   },
 });
-
-
-

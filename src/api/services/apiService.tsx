@@ -41,6 +41,12 @@ export interface AttendanceRecord {
   loginLocation?: LocationResponse;
   totalWorkMinutes?: number;
   totalBreakMinutes?: number;
+  breaks?: {
+    type: BreakType | 'location';
+    startAt: string;
+    endAt?: string | null;
+    minutes?: number;
+  }[];
 }
 
 export interface ApiResponse<T> {
@@ -84,7 +90,7 @@ export const attendanceService = {
    */
   endAttendance: async (): Promise<ApiResponse<AttendanceRecord>> => {
     const response = await axiosClient.post<ApiResponse<AttendanceRecord>>(
-      '/employees/attendance/end',
+      '/users/attendance/end',
       {}
     );
     return response as unknown as ApiResponse<AttendanceRecord>;
@@ -95,9 +101,37 @@ export const attendanceService = {
    */
   getAttendanceHistory: async (): Promise<ApiResponse<AttendanceRecord[]>> => {
     const response = await axiosClient.get<ApiResponse<AttendanceRecord[]>>(
-      '/employees/attendance'
+      '/users/attendance'
     );
     return response as unknown as ApiResponse<AttendanceRecord[]>;
+  },
+
+  syncLocation: async (
+    location: LocationCoords
+  ): Promise<ApiResponse<{
+    action: 'paused' | 'resumed' | 'already_paused' | 'updated' | 'remote_allowed';
+    withinRadius: boolean;
+    distanceFromOfficeMeters: number | null;
+    allowedRadiusMeters: number | null;
+    attendance: AttendanceRecord;
+  }>> => {
+    const response = await axiosClient.post<ApiResponse<any>>(
+      '/users/attendance/location',
+      {
+        location: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+          accuracy: location.accuracy ? Math.round(location.accuracy) : 15,
+        },
+      }
+    );
+    return response as unknown as ApiResponse<{
+      action: 'paused' | 'resumed' | 'already_paused' | 'updated' | 'remote_allowed';
+      withinRadius: boolean;
+      distanceFromOfficeMeters: number | null;
+      allowedRadiusMeters: number | null;
+      attendance: AttendanceRecord;
+    }>;
   },
 
   /**
@@ -111,7 +145,7 @@ export const attendanceService = {
       type: breakType,
     };
     const response = await axiosClient.post<ApiResponse<any>>(
-      '/employees/attendance/break/start',
+      '/users/attendance/break/start',
       payload
     );
     return response as unknown as ApiResponse<any>;
@@ -122,7 +156,7 @@ export const attendanceService = {
    */
   endBreak: async (): Promise<ApiResponse<any>> => {
     const response = await axiosClient.post<ApiResponse<any>>(
-      '/employees/attendance/break/end',
+      '/users/attendance/break/end',
       {}
     );
     return response as unknown as ApiResponse<any>;

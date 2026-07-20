@@ -243,7 +243,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StatusBar,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';

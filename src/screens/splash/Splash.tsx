@@ -1,6 +1,6 @@
 // src/screens/splash/SplashScreen.js
 import React from 'react';
-import { StyleSheet, View, Image, StatusBar, ActivityIndicator, Text } from 'react-native';
+import { StyleSheet, ActivityIndicator, Text } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 // Importing your custom constants

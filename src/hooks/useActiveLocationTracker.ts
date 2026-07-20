@@ -1,5 +1,5 @@
 // src/hooks/useActiveLocationTracker.ts
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus, Platform, PermissionsAndroid } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,10 +7,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const useActiveLocationTracker = () => {
   const appState = useRef(AppState.currentState);
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Request runtime location permissions
-  const requestLocationPermission = async (): Promise<boolean> => {
+  const requestLocationPermission = useCallback(async (): Promise<boolean> => {
     if (Platform.OS === 'ios') {
       const auth = await Geolocation.requestAuthorization('whenInUse');
       return auth === 'granted';
@@ -28,10 +28,10 @@ export const useActiveLocationTracker = () => {
       }
     }
     return false;
-  };
+  }, []);
 
   // Perform GPS query and transmit live data to backend
-  const syncLocationWithBackend = async () => {
+  const syncLocationWithBackend = useCallback(async () => {
     try {
       const hasPermission = await requestLocationPermission();
       if (!hasPermission) return;
@@ -42,16 +42,9 @@ export const useActiveLocationTracker = () => {
 
       Geolocation.getCurrentPosition(
         async (position) => {
-          const { latitude, longitude, speed, heading } = position.coords;
+          const { latitude, longitude } = position.coords;
 
           try {
-            // await driverService.updateLocation({
-            //   lat: latitude,
-            //   lng: longitude,
-            //   speed: speed ?? 0,
-            //   heading: heading ?? 0,
-            // });
-            
             console.log('📡 [3s Interval] Coordinates Broadcasted successfully:', { latitude, longitude });
           } catch (apiError) {
             console.warn('📡 [3s Interval] API update failed:', apiError);
@@ -66,7 +59,7 @@ export const useActiveLocationTracker = () => {
     } catch (err) {
       console.warn('Location Tracker runtime execution error:', err);
     }
-  };
+  }, [requestLocationPermission]);
 
   // Listen to Active vs Background App States
   useEffect(() => {
@@ -105,7 +98,7 @@ export const useActiveLocationTracker = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [appStateVisible]);
+  }, [appStateVisible, syncLocationWithBackend]);
 };
 
  

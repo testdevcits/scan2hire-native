@@ -3,6 +3,7 @@ import React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LayoutDashboard, History } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, FONTS } from '../constants';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
@@ -19,6 +20,7 @@ const TabsNavigation = () => {
   // Leverage exact brand constants from your design tokens
   const brandPrimary = COLORS.primary;
   const brandInactive = COLORS.lightGrey;
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
@@ -27,7 +29,13 @@ const TabsNavigation = () => {
         tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: brandPrimary,
         tabBarInactiveTintColor: brandInactive,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            height: (Platform.OS === 'ios' ? 70 : 62) + insets.bottom,
+            paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 12 : 8),
+          },
+        ],
         tabBarShowLabel: true,
         
         tabBarLabelStyle: {
@@ -101,13 +109,10 @@ export default TabsNavigation;
 const styles = StyleSheet.create({
   tabBar: {
     position: 'absolute',
-    left: 20,
-    right: 20,
-    bottom: Platform.OS === 'ios' ? 24 : 16,
-
-    // Safe responsive height calculations
-    height: Platform.OS === 'ios' ? 76 : 64,
-    borderRadius: 24,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 0,
 
     backgroundColor: COLORS.surface,
     

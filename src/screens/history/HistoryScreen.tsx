@@ -10,7 +10,6 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  SafeAreaView,
   ListRenderItem,
   TouchableOpacity,
 } from 'react-native';

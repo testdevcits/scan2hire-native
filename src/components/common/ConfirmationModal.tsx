@@ -4,8 +4,6 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
-  Animated,
-  ViewStyle,
 } from 'react-native';
 import { LucideIcon, AlertTriangle, CheckCircle2, Info, X } from 'lucide-react-native';
 import { COLORS, FONT_SIZE, FONTS, ICON_SIZE, RADIUS, SPACING } from '../../constants';
