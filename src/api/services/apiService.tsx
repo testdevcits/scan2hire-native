@@ -169,3 +169,25 @@ export const attendanceService = {
     return ensureSuccess(response as unknown as ApiResponse<any>);
   },
 };
+
+export const authService = {
+  requestPasswordOtp: async (
+    email: string
+  ): Promise<ApiResponse<null | Record<string, never>>> => {
+    const response = await axiosClient.post<ApiResponse<null>>(
+      '/employees/forgot-password',
+      { email }
+    );
+    return ensureSuccess(response as unknown as ApiResponse<null>);
+  },
+
+  resetPassword: async (
+    payload: { email: string; otp: string; password: string }
+  ): Promise<ApiResponse<null | Record<string, never>>> => {
+    const response = await axiosClient.post<ApiResponse<null>>(
+      '/employees/reset-password',
+      payload
+    );
+    return ensureSuccess(response as unknown as ApiResponse<null>);
+  },
+};

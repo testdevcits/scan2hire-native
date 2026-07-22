@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector, useDispatch } from 'react-redux';
 
 import LoginScreen from '../screens/login/Login';
+import ForgotPasswordScreen from '../screens/login/ForgotPassword';
 import { checkStoredToken } from '../redux/slices/authSlice';
 import TabsNavigation from './TabsNavigation';
 import SplashScreen from '../screens/splash/Splash';
@@ -34,7 +35,10 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {token === null ? (
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+        </>
       ) : (
         <>
           <Stack.Screen name="Main" component={TabsNavigation} />

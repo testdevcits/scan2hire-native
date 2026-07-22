@@ -30,9 +30,11 @@ const Input = ({
   rightIcon,
   onRightIconPress,
   disabled,
+  secureTextEntry,
   ...props
 }: InputProps) => {
-  const [secureText, setSecureText] = useState(isPassword);
+  const hasSecureTextToggle = isPassword || Boolean(secureTextEntry);
+  const [secureText, setSecureText] = useState(hasSecureTextToggle);
   const [focused, setFocused] = useState(false);
 
   return (
@@ -57,7 +59,7 @@ const Input = ({
         <TextInput
           {...props}
           style={styles.input}
-          secureTextEntry={secureText}
+          secureTextEntry={hasSecureTextToggle ? secureText : false}
           placeholderTextColor={COLORS.textLight}
           allowFontScaling={false}
           onFocus={() => setFocused(true)}
@@ -65,9 +67,12 @@ const Input = ({
           editable={disabled}
         />
 
-        {isPassword ? (
+        {hasSecureTextToggle ? (
           <TouchableOpacity
-            onPress={() => setSecureText(!secureText)}
+            onPress={() => {
+              setSecureText(!secureText);
+              onRightIconPress?.();
+            }}
             hitSlop={10}>
             {rightIcon}
           </TouchableOpacity>

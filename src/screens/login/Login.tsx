@@ -243,6 +243,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
@@ -263,7 +264,7 @@ interface RootState {
   auth: AuthState;
 }
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }: any) {
   const dispatch = useDispatch<any>();
   const { loading } = useSelector((state: RootState) => state.auth);
 
@@ -392,6 +393,13 @@ export default function LoginScreen() {
               onPress={handleLogin}
               buttonStyle={styles.loginButton}
             />
+
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={() => navigation.navigate('ForgotPassword')}
+              style={styles.forgotButton}>
+              <AppText style={styles.forgotText}>Forgot Password?</AppText>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.footer}>
@@ -455,6 +463,17 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
     borderRadius: RADIUS.md,
     height: 52,
+  },
+  forgotButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: SPACING.md,
+    minHeight: 44,
+  },
+  forgotText: {
+    color: COLORS.primary,
+    fontFamily: FONTS.semiBold,
+    fontSize: FONT_SIZE.md,
   },
   footer: {
     alignItems: 'center',
