@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
 import { store } from './src/app/store';
@@ -10,8 +10,15 @@ import Toast from 'react-native-toast-message';
 import { toastConfig } from './src/components/common/ToastConfig';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { initAttendanceBackgroundFetch } from './src/services/locationTrackingService';
 
 export default function App() {
+  useEffect(() => {
+    initAttendanceBackgroundFetch().catch((error) => {
+      console.warn('[attendance:location:fetch] Init failed:', error?.message || error);
+    });
+  }, []);
+
   return (
     // 1. Absolute Root
     <GestureHandlerRootView style={{ flex: 1 }}>

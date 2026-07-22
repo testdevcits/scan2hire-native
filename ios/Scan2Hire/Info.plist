@@ -60,6 +60,11 @@
 	<string>This app requires location access in the background to verify proximity and track work sessions.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This app requires location access always to verify office presence when running in the background.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>location</string>
+	</array>
 	<key>UIAppFonts</key>
 	<array>
 		<string>DMSans_24pt-Thin.ttf</string>

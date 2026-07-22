@@ -27,6 +27,11 @@ import ProfileCollapsibleCard from './ProfileCollapsibleCard';
 import TodaystimeLines from './TodaystimeLines';
 import styles from './styles.dashboard';
 import Toast from 'react-native-toast-message';
+import {
+  startAttendanceLocationTracking,
+  stopAttendanceLocationTracking,
+  syncAttendanceLocationOnce,
+} from '../../services/locationTrackingService';
 
 
 interface AuthState {
@@ -127,7 +132,7 @@ export default function DashboardScreen() {
     fetchTodayStatus();
     return () => {
       stopTimer();
-      stopLocationSync();
+      stopLocationSync(false);
     };
   }, []);
 
@@ -146,10 +151,10 @@ export default function DashboardScreen() {
     if (todayRecord?.status === 'running') {
       startLocationSync();
     } else {
-      stopLocationSync();
+      stopLocationSync(true);
     }
 
-    return () => stopLocationSync();
+    return () => stopLocationSync(false);
     // Location polling must start/stop only when running status changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todayRecord?.status]);
@@ -257,20 +262,28 @@ export default function DashboardScreen() {
   };
 
   const startLocationSync = () => {
-    stopLocationSync();
+    stopLocationSync(false);
+    startAttendanceLocationTracking().catch((error) => {
+      console.warn('[attendance:location:bg] Start failed:', error?.message || error);
+    });
     syncCurrentLocation(true);
     locationSyncRef.current = setInterval(() => {
       syncCurrentLocation(true);
     }, 10000);
   };
 
-  const stopLocationSync = () => {
+  const stopLocationSync = (stopBackground = false) => {
     if (locationSyncRef.current) {
       clearInterval(locationSyncRef.current);
       locationSyncRef.current = null;
     }
     locationSyncBusyRef.current = false;
     lastLocationActionRef.current = null;
+    if (stopBackground) {
+      stopAttendanceLocationTracking().catch((error) => {
+        console.warn('[attendance:location:bg] Stop failed:', error?.message || error);
+      });
+    }
   };
 
   const readCurrentLocation = (
@@ -334,17 +347,17 @@ export default function DashboardScreen() {
     locationSyncBusyRef.current = true;
 
     try {
-      const coords = await readCurrentLocation();
-      const res = await attendanceService.syncLocation(coords);
+      const res = await syncAttendanceLocationOnce('dashboard');
 
       if (res.success && res.data?.attendance) {
+        const syncedAttendance = res.data.attendance as AttendanceRecord;
         setLocationMessage(
           res.data.withinRadius
             ? 'Inside office radius. Work time is active.'
             : `Outside office radius by ${res.data.distanceFromOfficeMeters || 0}m. Work time is paused.`
         );
-        setTodayRecord(res.data.attendance);
-        const activeBreak = res.data.attendance.breaks?.find((b) => !b.endAt);
+        setTodayRecord(syncedAttendance);
+        const activeBreak = syncedAttendance.breaks?.find((b) => !b.endAt);
         setOnBreak(Boolean(activeBreak));
         if (activeBreak?.type && activeBreak.type !== 'location') {
           setSelectedBreakType(activeBreak.type as BreakType);
@@ -459,6 +472,9 @@ export default function DashboardScreen() {
             setActionTone('success');
             setActionMessage(message);
             Alert.alert('Success', message);
+            startAttendanceLocationTracking().catch((error) => {
+              console.warn('[attendance:location:bg] Start failed:', error?.message || error);
+            });
             fetchTodayStatus();
           }
         } catch (error: any) {
@@ -491,9 +507,12 @@ export default function DashboardScreen() {
   const confirmEndAttendance = async () => {
     try {
       setClockOutLoading(true);
-      stopLocationSync();
+      stopLocationSync(true);
       const res = await attendanceService.endAttendance();
       if (res.success) {
+        stopAttendanceLocationTracking().catch((error) => {
+          console.warn('[attendance:location:bg] Stop failed:', error?.message || error);
+        });
         setShowClockOutModal(false);
         const message = res.message || 'Attendance ended successfully.';
         setActionTone('success');
