@@ -147,6 +147,8 @@ export const initAttendanceBackgroundFetch = async () => {
       minimumFetchInterval: 15,
       stopOnTerminate: false,
       startOnBoot: true,
+      enableHeadless: true,
+      forceAlarmManager: true,
       requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY,
     },
     async (taskId: string) => {
@@ -165,4 +167,25 @@ export const initAttendanceBackgroundFetch = async () => {
       BackgroundFetch.finish(taskId);
     }
   );
+};
+
+export const attendanceBackgroundFetchHeadlessTask = async (event: any) => {
+  const taskId = event?.taskId || event;
+
+  try {
+    const trackingActive = await AsyncStorage.getItem(TRACKING_ACTIVE_KEY);
+    if (trackingActive === 'true') {
+      await syncAttendanceLocationOnce('background-fetch-headless');
+    }
+  } catch (error: any) {
+    console.warn('[attendance:location:headless] Sync failed:', error?.message || error);
+  } finally {
+    if (taskId) {
+      BackgroundFetch.finish(taskId);
+    }
+  }
+};
+
+export const registerAttendanceLocationHeadlessTask = () => {
+  BackgroundFetch.registerHeadlessTask(attendanceBackgroundFetchHeadlessTask);
 };
