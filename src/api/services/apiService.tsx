@@ -171,6 +171,7 @@ export const attendanceService = {
 };
 
 export const authService = {
+
   requestPasswordOtp: async (
     email: string
   ): Promise<ApiResponse<null | Record<string, never>>> => {
@@ -181,11 +182,23 @@ export const authService = {
     return ensureSuccess(response as unknown as ApiResponse<null>);
   },
 
-  resetPassword: async (
-    payload: { email: string; otp: string; password: string }
+  verifyOtp: async (
+    email: string,
+    otp: string
   ): Promise<ApiResponse<null | Record<string, never>>> => {
     const response = await axiosClient.post<ApiResponse<null>>(
-      '/employees/reset-password',
+      '/employees/forgot-password/verify-otp',
+      { email, otp }
+    );
+    return ensureSuccess(response as unknown as ApiResponse<null>);
+  },
+ 
+
+  resetPassword: async (
+    payload: { email: string; resetToken: string; password: string }
+  ): Promise<ApiResponse<null | Record<string, never>>> => {
+    const response = await axiosClient.post<ApiResponse<null>>(
+      '/employees/forgot-password/reset',
       payload
     );
     return ensureSuccess(response as unknown as ApiResponse<null>);

@@ -1,5 +1,5 @@
 // src/components/Header.tsx
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import {
     View,
     Text,
@@ -15,7 +15,7 @@ import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import { UserProfile } from '../../types/user';
 
 interface HeaderProps {
-    user: UserProfile | null;
+    user?: UserProfile | null;
     onLogout?: () => void;
     onRefresh?: () => void;
     onSettingsPress?: () => void;
@@ -122,7 +122,7 @@ const Header = ({
     );
 };
 
-export default Header;
+export default memo(Header);
 
 const styles = StyleSheet.create({
     container: {

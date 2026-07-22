@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   View,
   StyleSheet,
@@ -34,27 +34,27 @@ const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
   if (!isVisible) return null;
 
   return (
-    <Modal 
-      transparent 
-      visible={isVisible} 
+    <Modal
+      transparent
+      visible={isVisible}
       animationType="fade" // Standard professional fade
       onRequestClose={onClose}
     >
       <StatusBar barStyle="light-content" backgroundColor="black" />
-      
+
       <View style={styles.container}>
         {/* 1. Transparent Header Overlay */}
         <SafeAreaView style={styles.headerWrapper}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>
-              <TouchableOpacity 
-                onPress={onClose} 
+              <TouchableOpacity
+                onPress={onClose}
                 style={styles.iconBtn}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <ChevronLeft color="white" size={28} />
               </TouchableOpacity>
-              
+
               <View style={styles.headerTextContainer}>
                 <AppText style={styles.headerTitle} numberOfLines={1}>
                   {title || 'View Photo'}
@@ -66,7 +66,7 @@ const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
                 )}
               </View>
             </View>
-            
+
             {/* <View style={styles.headerRight}>
               <TouchableOpacity style={styles.iconBtn}>
                 <Download color="white" size={22} />
@@ -169,4 +169,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default ImageViewerModal;
+export default memo(ImageViewerModal);

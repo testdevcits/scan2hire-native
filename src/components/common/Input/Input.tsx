@@ -1,6 +1,6 @@
  
 
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import {
   TextInput,
   View,
@@ -90,4 +90,4 @@ const Input = ({
   );
 };
 
-export default Input;
+export default memo(Input);

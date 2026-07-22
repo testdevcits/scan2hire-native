@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { 
   LogIn, 
@@ -215,4 +215,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HistoryCard;
+export default memo(HistoryCard);

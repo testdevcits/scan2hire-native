@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   Modal,
   StyleSheet,
@@ -194,4 +194,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ConfirmationModal;
+export default memo(ConfirmationModal);

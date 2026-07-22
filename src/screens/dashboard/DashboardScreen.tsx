@@ -491,6 +491,7 @@ export default function DashboardScreen() {
   const confirmEndAttendance = async () => {
     try {
       setClockOutLoading(true);
+      stopLocationSync();
       const res = await attendanceService.endAttendance();
       if (res.success) {
         setShowClockOutModal(false);
@@ -505,6 +506,9 @@ export default function DashboardScreen() {
       setActionTone('error');
       setActionMessage(message);
       Alert.alert('Error', message);
+      if (todayRecord?.status === 'running') {
+        startLocationSync();
+      }
     } finally {
       setClockOutLoading(false);
     }
