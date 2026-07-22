@@ -92,7 +92,7 @@ export default function DashboardScreen() {
   const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
 
 
-  const TodaysSelfie = todayRecord?.loginSelfie?.url
+  const TodaysSelfie = todayRecord?.loginSelfie?.url || ''
 
   // Timer States
   const [totalTime, setTotalTime] = useState<string>('00:00:00');
@@ -656,7 +656,7 @@ export default function DashboardScreen() {
         onLogout={handleLogout}
         onRefresh={fetchTodayStatus}
         onSettingsPress={() => navigation.navigate('Settings')}
-        onPressProfile={() => { setSelectedPhoto(user?.profileImage), setIsViewerVisible(!isViewerVisible) }}
+        onPressProfile={() => { setSelectedPhoto(user?.profileImage || ''), setIsViewerVisible(!isViewerVisible) }}
       />
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
 

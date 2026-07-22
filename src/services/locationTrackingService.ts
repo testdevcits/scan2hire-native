@@ -1,10 +1,13 @@
 import { PermissionsAndroid, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const BackgroundService = require('react-native-background-actions');
-const BackgroundFetch = require('react-native-background-fetch');
 import Geolocation from 'react-native-geolocation-service';
 import axiosClient from '../api/axiosClient';
 import { LocationCoords } from '../api/services/apiService';
+
+const backgroundServiceModule = require('react-native-background-actions');
+const backgroundFetchModule = require('react-native-background-fetch');
+const BackgroundService = backgroundServiceModule.default || backgroundServiceModule;
+const BackgroundFetch = backgroundFetchModule.default || backgroundFetchModule;
 
 const TRACKING_ACTIVE_KEY = 'attendanceLocationTrackingActive';
 const SYNC_INTERVAL_MS = 10000;
@@ -142,6 +145,11 @@ export const stopAttendanceLocationTracking = async () => {
 };
 
 export const initAttendanceBackgroundFetch = async () => {
+  if (typeof BackgroundFetch.configure !== 'function') {
+    console.warn('[attendance:location:fetch] BackgroundFetch.configure is not available.');
+    return;
+  }
+
   await BackgroundFetch.configure(
     {
       minimumFetchInterval: 15,
@@ -186,6 +194,12 @@ export const attendanceBackgroundFetchHeadlessTask = async (event: any) => {
   }
 };
 
-export const registerAttendanceLocationHeadlessTask = () => {
+export const registerAttendanceLocationHeadlessTask = (): boolean => {
+  if (typeof BackgroundFetch.registerHeadlessTask !== 'function') {
+    console.warn('[attendance:location:headless] BackgroundFetch.registerHeadlessTask is not available.');
+    return false;
+  }
+
   BackgroundFetch.registerHeadlessTask(attendanceBackgroundFetchHeadlessTask);
+  return true;
 };
