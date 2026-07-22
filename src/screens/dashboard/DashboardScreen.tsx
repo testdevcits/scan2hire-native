@@ -703,7 +703,7 @@ export default function DashboardScreen() {
                     onPress={handleEndAttendance}
                     disabled={loading}
                   >
-                    <Text style={styles.actionBtnText}>End Work Shift</Text>
+                    <Text style={styles.actionBtnText}>Clock Out</Text>
                   </TouchableOpacity>
 
                   <View style={styles.dividerLine} />

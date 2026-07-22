@@ -24,6 +24,8 @@
     "lucide-react-native": "^1.24.0",
     "react": "19.2.3",
     "react-native": "0.85.1",
+    "react-native-background-actions": "^4.1.0",
+    "react-native-background-fetch": "^4.4.2",
     "react-native-calendars": "^1.1314.0",
     "react-native-date-picker": "^5.0.13",
     "react-native-geolocation-service": "^5.3.1",

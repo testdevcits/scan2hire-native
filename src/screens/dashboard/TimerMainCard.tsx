@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Image, StyleSheet, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Image, StyleSheet, Dimensions, Pressable } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 import {
   Coffee,
@@ -10,6 +10,8 @@ import {
 } from 'lucide-react-native';
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import AppText from '../../components/common/AppText';
+import { ImageViewerModal } from '../../components';
+
 
 interface ProgressData {
   workPercent: number;
@@ -45,13 +47,19 @@ const TimerMainCard: React.FC<TimerMainCardProps> = ({
   const breakStroke = (progress.breakPercent / 100) * circumference;
 
   const primaryStatusColor = progress.complete ? COLORS.success : COLORS.success;
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
+  const [selecttedPhotoUrl, setSelectedPhoto] = useState('')
+
+
 
   return (
     <View style={styles.container}>
       {/* Header Row */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
-          <Image source={{ uri: TodaysSelfie }} style={styles.avatar} />
+          <Pressable disabled={!TodaysSelfie} onPress={() => {setIsViewerVisible(!isViewerVisible),setSelectedPhoto(TodaysSelfie)}}>
+            <Image source={{ uri: TodaysSelfie }} style={styles.avatar} />
+          </Pressable>
           <View>
             <AppText style={styles.title}>Daily Activity</AppText>
             <AppText style={styles.subtitle}>Real-time session</AppText>
@@ -143,7 +151,7 @@ const TimerMainCard: React.FC<TimerMainCardProps> = ({
         </View>
 
         <View style={styles.bottomCard}>
-          <View style={[styles.iconCircle, { backgroundColor:'#EEF2FF' }]}>
+          <View style={[styles.iconCircle, { backgroundColor: '#EEF2FF' }]}>
             <Coffee size={16} color={COLORS.primary} />
           </View>
           <View style={styles.bottomCardText}>
@@ -152,6 +160,14 @@ const TimerMainCard: React.FC<TimerMainCardProps> = ({
           </View>
         </View>
       </View>
+
+      {isViewerVisible &&
+        <ImageViewerModal
+          isVisible={isViewerVisible}
+          onClose={() => setIsViewerVisible(false)}
+          imageUrl={selecttedPhotoUrl}
+        />
+      }
     </View>
   );
 };

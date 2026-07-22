@@ -4,6 +4,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,7 +21,7 @@ import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import { updateMyProfile } from '../../redux/slices/authSlice';
 import { UserProfile } from '../../types/user';
 import styles from './styles.profilesettings';
-import { PhotoSourceSheet } from '../../components';
+import { ImageViewerModal, PhotoSourceSheet } from '../../components';
 
 interface RootState {
   auth: {
@@ -39,6 +40,8 @@ const ProfileSettingsScreen = () => {
   const [photoBase64, setPhotoBase64] = useState<string | undefined>();
   const [photoUri, setPhotoUri] = useState<string | undefined>();
   const [showPhotoSheet, setShowPhotoSheet] = useState(false);
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
+  const [selecttedPhotoUrl, setSelectedPhoto] = useState<string | undefined>('')
 
 
   useEffect(() => {
@@ -152,13 +155,13 @@ const ProfileSettingsScreen = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.photoSection}>
-            <View style={styles.avatar}>
+            <Pressable disabled={!photoUri} onPress={() => { setIsViewerVisible(!isViewerVisible), setSelectedPhoto(photoUri) }} style={styles.avatar}>
               {photoUri ? (
                 <Image source={{ uri: photoUri }} style={styles.avatarImage} />
               ) : (
                 <User size={34} color={COLORS.primary} />
               )}
-            </View>
+            </Pressable>
             <TouchableOpacity style={styles.photoButton} onPress={choosePhotoSource}>
               <Camera size={16} color={COLORS.primary} />
               <Text style={styles.photoButtonText}>Upload Profile Photo</Text>
@@ -213,6 +216,14 @@ const ProfileSettingsScreen = () => {
         // onRemove={() => console.log('Remove logic')}
 
         />
+
+        {isViewerVisible &&
+          <ImageViewerModal
+            isVisible={isViewerVisible}
+            onClose={() => setIsViewerVisible(false)}
+            imageUrl={selecttedPhotoUrl}
+          />
+        }
       </KeyboardAvoidingView>
     </View>
   );
