@@ -76,7 +76,7 @@ export default function ResetPasswordScreen({ navigation, route }: any) {
     const strength = getStrength();
 
     const strengthBarStyle = useAnimatedStyle(() => ({
-        width: withSpring(strength.width),
+        width: withSpring(strength.width as any) as any,
         backgroundColor: withTiming(strength.color),
     }));
 

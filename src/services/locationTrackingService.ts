@@ -74,10 +74,16 @@ export const readDeviceLocation = (): Promise<LocationCoords> =>
 
 export const syncAttendanceLocationOnce = async (source = 'foreground') => {
   const token = await AsyncStorage.getItem('userToken');
-  if (!token) return null;
+  if (!token) {
+    console.log('[attendance:location:native] Skip sync: no auth token', { source });
+    return null;
+  }
 
   const hasPermission = await requestLocationPermissions();
-  if (!hasPermission) return null;
+  if (!hasPermission) {
+    console.warn('[attendance:location:native] Skip sync: location permission denied', { source });
+    return null;
+  }
 
   const location = await readDeviceLocation();
   const response = await axiosClient.post('/users/attendance/location', {
@@ -90,9 +96,14 @@ export const syncAttendanceLocationOnce = async (source = 'foreground') => {
 
   console.log('[attendance:location:native]', {
     source,
+    action: response?.data?.action,
+    withinRadius: response?.data?.withinRadius,
+    distanceFromOfficeMeters: response?.data?.distanceFromOfficeMeters,
+    allowedRadiusMeters: response?.data?.allowedRadiusMeters,
     latitude: location.latitude,
     longitude: location.longitude,
     accuracy: location.accuracy,
+    at: new Date().toISOString(),
   });
 
   return response as any;
@@ -131,15 +142,21 @@ const backgroundOptions = {
 
 export const startAttendanceLocationTracking = async () => {
   await AsyncStorage.setItem(TRACKING_ACTIVE_KEY, 'true');
+  console.log('[attendance:location:bg] Tracking marked active.');
 
   if (!BackgroundService.isRunning()) {
+    console.log('[attendance:location:bg] Starting foreground service.');
     await BackgroundService.start(backgroundLocationTask, backgroundOptions);
+  } else {
+    console.log('[attendance:location:bg] Foreground service already running.');
   }
 };
 
 export const stopAttendanceLocationTracking = async () => {
   await AsyncStorage.removeItem(TRACKING_ACTIVE_KEY);
+  console.log('[attendance:location:bg] Tracking marked inactive.');
   if (BackgroundService.isRunning()) {
+    console.log('[attendance:location:bg] Stopping foreground service.');
     await BackgroundService.stop();
   }
 };
@@ -175,6 +192,7 @@ export const initAttendanceBackgroundFetch = async () => {
       BackgroundFetch.finish(taskId);
     }
   );
+  console.log('[attendance:location:fetch] Background fetch configured.');
 };
 
 export const attendanceBackgroundFetchHeadlessTask = async (event: any) => {

@@ -44,7 +44,7 @@ const Header = ({
     return (
         <View style={styles.container}>
             {/* Left: Avatar & User Information */}
-            <Pressable onPress={profileUrl && onPressProfile} style={styles.profileSection}>
+            <Pressable onPress={profileUrl ? onPressProfile : undefined} style={styles.profileSection}>
                 {profileUrl && profileUrl.trim() !== '' ? (
                     <Image source={{ uri: profileUrl }} style={styles.avatarImage} />
                 ) : (
