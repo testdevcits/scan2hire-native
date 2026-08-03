@@ -96,7 +96,7 @@ export const loginUser = createAsyncThunk<AuthPayload, LoginPayload, { rejectVal
 
         // 3. Fetch the FULL profile immediately
         const profileResponse = await axios.get(`${BASE_URL}/users/me`);
-        const fullUserData = profileResponse.data.data || profileResponse.data;
+        const fullUserData = profileResponse?.data?.data || profileResponse?.data;
 
         return { token, user: fullUserData };
       }
@@ -141,13 +141,13 @@ export const updateMyProfile = createAsyncThunk<
       const response = await axios.put(`${BASE_URL}/users/me`, payload);
       if (response.data?.success) {
         return {
-          user: response.data.data,
-          message: response.data.message || 'Profile updated successfully',
+          user: response?.data?.data,
+          message: response?.data?.message || 'Profile updated successfully',
         };
       }
-      return rejectWithValue(response.data?.message || 'Profile update failed');
+      return rejectWithValue(response?.data?.message || 'Profile update failed');
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Profile update failed');
+      return rejectWithValue(error?.response?.data?.message || 'Profile update failed');
     }
   }
 );

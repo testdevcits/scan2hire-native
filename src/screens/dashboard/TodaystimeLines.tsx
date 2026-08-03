@@ -21,11 +21,11 @@ const TodaystimeLines = ({ timelineEvents }: TodaystimeLinesProps) => {
                     <View key={ev.id} style={styles.timelineRow}>
                         <View style={styles.timelineLeftTrack}>
                             <View style={styles.timelineNodePoint} />
-                            {idx !== timelineEvents.length - 1 && <View style={styles.timelineTrackLine} />}
+                            {idx !== timelineEvents?.length - 1 && <View style={styles.timelineTrackLine} />}
                         </View>
                         <View style={styles.timelineRightContent}>
-                            <Text style={styles.timelineNodeTitle}>{ev.title}</Text>
-                            <Text style={styles.timelineNodeTime}>{ev.time}</Text>
+                            <Text style={styles.timelineNodeTitle}>{ev?.title}</Text>
+                            <Text style={styles.timelineNodeTime}>{ev?.time}</Text>
                         </View>
                     </View>
                 ))}

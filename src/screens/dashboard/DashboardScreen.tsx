@@ -12,14 +12,20 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Geolocation from 'react-native-geolocation-service';
-import ImagePicker, { Image as PickerImage } from 'react-native-image-crop-picker';
+import ImagePicker, {
+  Image as PickerImage,
+} from 'react-native-image-crop-picker';
 import { AlertTriangle, LogOut } from 'lucide-react-native';
 
 import { COLORS, SPACING } from '../../constants';
 import { logoutUser } from '../../redux/slices/authSlice';
 import { requestAppPermissions } from '../../utils/permissionUtils';
 import { UserProfile } from '../../types/user';
-import { AttendanceRecord, attendanceService, BreakType } from '../../api/services/apiService';
+import {
+  AttendanceRecord,
+  attendanceService,
+  BreakType,
+} from '../../api/services/apiService';
 import { ConfirmationModal, Header, ImageViewerModal } from '../../components';
 import { useNavigation } from '@react-navigation/native';
 import TimerMainCard from './TimerMainCard';
@@ -32,7 +38,6 @@ import {
   stopAttendanceLocationTracking,
   syncAttendanceLocationOnce,
 } from '../../services/locationTrackingService';
-
 
 interface AuthState {
   user: UserProfile | null;
@@ -68,7 +73,7 @@ const EMULATOR_DEFAULT_LOCATION = {
 const isNearCoordinate = (
   coords: LocationCoords,
   target: LocationCoords,
-  tolerance = 0.0005
+  tolerance = 0.0005,
 ) =>
   Math.abs(coords.latitude - target.latitude) <= tolerance &&
   Math.abs(coords.longitude - target.longitude) <= tolerance;
@@ -84,15 +89,12 @@ export default function DashboardScreen() {
   const { user } = useSelector((state: RootState) => state.auth);
   const navigation = useNavigation<any>();
   const [isViewerVisible, setIsViewerVisible] = useState(false);
-  const [selecttedPhotoUrl, setSelectedPhoto] = useState('')
-
-
+  const [selecttedPhotoUrl, setSelectedPhoto] = useState('');
 
   const [loading, setLoading] = useState<boolean>(false);
   const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
 
-
-  const TodaysSelfie = todayRecord?.loginSelfie?.url || ''
+  const TodaysSelfie = todayRecord?.loginSelfie?.url || '';
 
   // Timer States
   const [totalTime, setTotalTime] = useState<string>('00:00:00');
@@ -101,7 +103,8 @@ export default function DashboardScreen() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Break Selector & Profile Collapse State
-  const [selectedBreakType, setSelectedBreakType] = useState<BreakType>('lunch');
+  const [selectedBreakType, setSelectedBreakType] =
+    useState<BreakType>('lunch');
   const [isProfileCollapsed, setIsProfileCollapsed] = useState<boolean>(false);
   const [onBreak, setOnBreak] = useState<boolean>(false);
 
@@ -109,15 +112,15 @@ export default function DashboardScreen() {
   const [showClockOutModal, setShowClockOutModal] = useState<boolean>(false);
   const [clockOutLoading, setClockOutLoading] = useState<boolean>(false);
 
-
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
   const [locationMessage, setLocationMessage] = useState<string>('');
   const [actionMessage, setActionMessage] = useState<string>('');
-  const [actionTone, setActionTone] = useState<'info' | 'success' | 'warning' | 'error'>('info');
+  const [actionTone, setActionTone] = useState<
+    'info' | 'success' | 'warning' | 'error'
+  >('info');
   const locationSyncRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const locationSyncBusyRef = useRef<boolean>(false);
   const lastLocationActionRef = useRef<string | null>(null);
-
 
   // Break options definition
   const breakOptions: { label: string; value: BreakType }[] = [
@@ -160,21 +163,20 @@ export default function DashboardScreen() {
   }, [todayRecord?.status]);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (state: AppStateStatus) => {
-      if (state === 'active' && todayRecord?.status === 'running') {
-        syncCurrentLocation(true);
-        fetchTodayStatus();
-      }
-    });
+    const subscription = AppState.addEventListener(
+      'change',
+      (state: AppStateStatus) => {
+        if (state === 'active' && todayRecord?.status === 'running') {
+          syncCurrentLocation(true);
+          fetchTodayStatus();
+        }
+      },
+    );
 
     return () => subscription.remove();
     // Foreground refresh should only depend on attendance running state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todayRecord?.status]);
-
-
-
-
 
   const fetchTodayStatus = async () => {
     try {
@@ -182,18 +184,20 @@ export default function DashboardScreen() {
       const res = await attendanceService.getAttendanceHistory();
       if (res.success && res.data && res.data.length > 0) {
         const todayStr = new Date().toISOString().split('T')[0];
-        const match = res.data.find((rec) => rec.dateKey === todayStr);
+        const match = res.data.find(rec => rec.dateKey === todayStr);
         if (match) {
           setTodayRecord(match);
           if (match.loginLocation) {
             setLocationMessage(
               match.loginLocation.withinRadius
                 ? 'Inside office radius. Work time is active.'
-                : `Outside office radius by ${match.loginLocation.distanceFromOfficeMeters || 0}m. Work time is paused.`
+                : `Outside office radius by ${
+                    match.loginLocation.distanceFromOfficeMeters || 0
+                  }m. Work time is paused.`,
             );
           }
           // Check if currently on an active break (startAt exists but no endAt)
-          const activeBreak = match.breaks?.find((b) => !b.endAt);
+          const activeBreak = match.breaks?.find(b => !b.endAt);
           if (activeBreak) {
             setOnBreak(true);
             if (activeBreak.type !== 'location') {
@@ -237,11 +241,16 @@ export default function DashboardScreen() {
       let completedBreakSecs = 0;
       let activeBreakSecs = 0;
 
-      todayRecord.breaks?.forEach((b) => {
+      todayRecord.breaks?.forEach(b => {
         if (b.endAt) {
-          completedBreakSecs += Math.floor((new Date(b.endAt).getTime() - new Date(b.startAt).getTime()) / 1000);
+          completedBreakSecs += Math.floor(
+            (new Date(b.endAt).getTime() - new Date(b.startAt).getTime()) /
+              1000,
+          );
         } else {
-          activeBreakSecs += Math.floor((now - new Date(b.startAt).getTime()) / 1000);
+          activeBreakSecs += Math.floor(
+            (now - new Date(b.startAt).getTime()) / 1000,
+          );
         }
       });
 
@@ -263,8 +272,11 @@ export default function DashboardScreen() {
 
   const startLocationSync = () => {
     stopLocationSync(false);
-    startAttendanceLocationTracking().catch((error) => {
-      console.warn('[attendance:location:bg] Start failed:', error?.message || error);
+    startAttendanceLocationTracking().catch(error => {
+      console.warn(
+        '[attendance:location:bg] Start failed:',
+        error?.message || error,
+      );
     });
     syncCurrentLocation(true);
     locationSyncRef.current = setInterval(() => {
@@ -280,23 +292,26 @@ export default function DashboardScreen() {
     locationSyncBusyRef.current = false;
     lastLocationActionRef.current = null;
     if (stopBackground) {
-      stopAttendanceLocationTracking().catch((error) => {
-        console.warn('[attendance:location:bg] Stop failed:', error?.message || error);
+      stopAttendanceLocationTracking().catch(error => {
+        console.warn(
+          '[attendance:location:bg] Stop failed:',
+          error?.message || error,
+        );
       });
     }
   };
 
   const readCurrentLocation = (
-    options: LocationReadOptions = {}
+    options: LocationReadOptions = {},
   ): Promise<LocationCoords> => {
     const readPosition = (
       enableHighAccuracy: boolean,
       timeout: number,
-      maximumAge: number
+      maximumAge: number,
     ) =>
       new Promise<LocationCoords>((resolve, reject) => {
         Geolocation.getCurrentPosition(
-          (position) => {
+          position => {
             const coords = {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
@@ -305,12 +320,13 @@ export default function DashboardScreen() {
 
             if (
               !options.allowEmulatorDefault &&
-              (position.mocked || isNearCoordinate(coords, EMULATOR_DEFAULT_LOCATION))
+              (position.mocked ||
+                isNearCoordinate(coords, EMULATOR_DEFAULT_LOCATION))
             ) {
               reject(
                 new Error(
-                  'Device is sending emulator/mock location. Set emulator GPS to office location or test on a real phone near office.'
-                )
+                  'Device is sending emulator/mock location. Set emulator GPS to office location or test on a real phone near office.',
+                ),
               );
               return;
             }
@@ -328,19 +344,23 @@ export default function DashboardScreen() {
             },
             showLocationDialog: true,
             forceRequestLocation: true,
-          }
+          },
         );
       });
 
-    return readPosition(true, 20000, 0).catch((firstError) =>
+    return readPosition(true, 20000, 0).catch(firstError =>
       readPosition(false, 20000, 0).catch(() => {
         throw firstError;
-      })
+      }),
     );
   };
 
   const syncCurrentLocation = async (silent = false) => {
-    if (!todayRecord || todayRecord.status !== 'running' || locationSyncBusyRef.current) {
+    if (
+      !todayRecord ||
+      todayRecord.status !== 'running' ||
+      locationSyncBusyRef.current
+    ) {
       return;
     }
 
@@ -354,10 +374,12 @@ export default function DashboardScreen() {
         setLocationMessage(
           res.data.withinRadius
             ? 'Inside office radius. Work time is active.'
-            : `Outside office radius by ${res.data.distanceFromOfficeMeters || 0}m. Work time is paused.`
+            : `Outside office radius by ${
+                res.data.distanceFromOfficeMeters || 0
+              }m. Work time is paused.`,
         );
         setTodayRecord(syncedAttendance);
-        const activeBreak = syncedAttendance.breaks?.find((b) => !b.endAt);
+        const activeBreak = syncedAttendance.breaks?.find(b => !b.endAt);
         setOnBreak(Boolean(activeBreak));
         if (activeBreak?.type && activeBreak.type !== 'location') {
           setSelectedBreakType(activeBreak.type as BreakType);
@@ -378,7 +400,6 @@ export default function DashboardScreen() {
           text2: res.message,
           position: 'top', // or 'bottom'
         });
-
       } else if (!silent && res.message) {
         Alert.alert('Location Synced', res.message);
       }
@@ -404,13 +425,19 @@ export default function DashboardScreen() {
     }
 
     const login = new Date(todayRecord.loginAt).getTime();
-    const logout = todayRecord.logoutAt ? new Date(todayRecord.logoutAt).getTime() : new Date().getTime();
+    const logout = todayRecord.logoutAt
+      ? new Date(todayRecord.logoutAt).getTime()
+      : new Date().getTime();
     const elapsedTotalSecs = Math.floor((logout - login) / 1000);
 
     let breakSecs = 0;
-    todayRecord.breaks?.forEach((b) => {
-      const breakEnd = b.endAt ? new Date(b.endAt).getTime() : new Date().getTime();
-      breakSecs += Math.floor((breakEnd - new Date(b.startAt).getTime()) / 1000);
+    todayRecord.breaks?.forEach(b => {
+      const breakEnd = b.endAt
+        ? new Date(b.endAt).getTime()
+        : new Date().getTime();
+      breakSecs += Math.floor(
+        (breakEnd - new Date(b.startAt).getTime()) / 1000,
+      );
     });
 
     const workSecs = elapsedTotalSecs - breakSecs;
@@ -424,7 +451,7 @@ export default function DashboardScreen() {
     const hrs = Math.floor(totalSeconds / 3600);
     const mins = Math.floor((totalSeconds % 3600) / 60);
     const secs = totalSeconds % 60;
-    return [hrs, mins, secs].map((v) => (v < 10 ? '0' + v : v)).join(':');
+    return [hrs, mins, secs].map(v => (v < 10 ? '0' + v : v)).join(':');
   };
 
   const secondsFromClock = (clock: string): number => {
@@ -437,7 +464,10 @@ export default function DashboardScreen() {
     const workSeconds = secondsFromClock(workTime);
     const breakSeconds = secondsFromClock(breakTime);
     const workPercent = Math.min(100, (workSeconds / targetSeconds) * 100);
-    const breakPercent = Math.min(100 - workPercent, (breakSeconds / targetSeconds) * 100);
+    const breakPercent = Math.min(
+      100 - workPercent,
+      (breakSeconds / targetSeconds) * 100,
+    );
 
     return {
       complete: workSeconds >= targetSeconds,
@@ -465,20 +495,29 @@ export default function DashboardScreen() {
         setLoading(true);
         try {
           const coords = await readCurrentLocation();
-          const res = await attendanceService.startAttendance(image.data!, coords);
+          const res = await attendanceService.startAttendance(
+            image.data!,
+            coords,
+          );
 
           if (res.success) {
             const message = res.message || 'Attendance started successfully.';
             setActionTone('success');
             setActionMessage(message);
             Alert.alert('Success', message);
-            startAttendanceLocationTracking().catch((error) => {
-              console.warn('[attendance:location:bg] Start failed:', error?.message || error);
+            startAttendanceLocationTracking().catch(error => {
+              console.warn(
+                '[attendance:location:bg] Start failed:',
+                error?.message || error,
+              );
             });
             fetchTodayStatus();
           }
         } catch (error: any) {
-          const message = getApiMessage(error, 'Please turn on GPS and try again.');
+          const message = getApiMessage(
+            error,
+            'Please turn on GPS and try again.',
+          );
           setActionTone('error');
           setActionMessage(message);
           // Alert.alert('Start Work Failed', message);
@@ -492,7 +531,7 @@ export default function DashboardScreen() {
           setLoading(false);
         }
       })
-      .catch((err) => {
+      .catch(err => {
         setLoading(false);
         if (err?.code !== 'E_PICKER_CANCELLED') {
           Alert.alert('Camera Error', err?.message || 'Unable to open camera.');
@@ -510,8 +549,11 @@ export default function DashboardScreen() {
       stopLocationSync(true);
       const res = await attendanceService.endAttendance();
       if (res.success) {
-        stopAttendanceLocationTracking().catch((error) => {
-          console.warn('[attendance:location:bg] Stop failed:', error?.message || error);
+        stopAttendanceLocationTracking().catch(error => {
+          console.warn(
+            '[attendance:location:bg] Stop failed:',
+            error?.message || error,
+          );
         });
         setShowClockOutModal(false);
         const message = res.message || 'Attendance ended successfully.';
@@ -540,7 +582,8 @@ export default function DashboardScreen() {
         const res = await attendanceService.startBreak(selectedBreakType);
         if (res.success) {
           setOnBreak(true);
-          const message = res.message || `Active ${selectedBreakType} break recorded.`;
+          const message =
+            res?.message || `Active ${selectedBreakType} break recorded.`;
           setActionTone('success');
           setActionMessage(message);
           // Alert.alert('Break Started', message);
@@ -551,14 +594,13 @@ export default function DashboardScreen() {
             position: 'top', // or 'bottom'
           });
 
-
           fetchTodayStatus();
         }
       } else {
         const res = await attendanceService.endBreak();
-        if (res.success) {
+        if (res?.success) {
           setOnBreak(false);
-          const message = res.message || 'Break entry finalized.';
+          const message = res?.message || 'Break entry finalized.';
           setActionTone('success');
           setActionMessage(message);
           // Alert.alert('Break Ended', message);
@@ -631,10 +673,10 @@ export default function DashboardScreen() {
   const getMissingDocuments = (): string[] => {
     if (!user?.employeeProfile?.documents) return [];
     const missing: string[] = [];
-    const docs = user.employeeProfile.documents;
+    const docs = user?.employeeProfile?.documents;
 
-    if (!docs.photo) missing.push('photo');
-    if (!docs.resume) missing.push('resume');
+    if (!docs?.photo) missing.push('photo');
+    if (!docs?.resume) missing.push('resume');
     return missing;
   };
 
@@ -642,11 +684,9 @@ export default function DashboardScreen() {
   const timelineEvents = generateTimelineEvents();
   const progress = getAttendanceProgress();
 
-
-
   const handleLogout = () => {
-    setShowLogoutModal(!showLogoutModal)
-  }
+    setShowLogoutModal(!showLogoutModal);
+  };
 
   return (
     <View style={styles.safeContainer}>
@@ -656,10 +696,15 @@ export default function DashboardScreen() {
         onLogout={handleLogout}
         onRefresh={fetchTodayStatus}
         onSettingsPress={() => navigation.navigate('Settings')}
-        onPressProfile={() => { setSelectedPhoto(user?.profileImage || ''), setIsViewerVisible(!isViewerVisible) }}
+        onPressProfile={() => {
+          setSelectedPhoto(user?.profileImage || ''),
+            setIsViewerVisible(!isViewerVisible);
+        }}
       />
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Pending Documents Banner Alert */}
         {/* {missingDocs.length > 0 && (
           <View style={styles.warningBanner}>
@@ -676,8 +721,11 @@ export default function DashboardScreen() {
         {/* Attendance Timer Display Grid */}
 
         <TimerMainCard
-          progress={progress} TodaysSelfie={TodaysSelfie} totalTime={totalTime} workTime={workTime} breakTime={breakTime}
-
+          progress={progress}
+          TodaysSelfie={TodaysSelfie}
+          totalTime={totalTime}
+          workTime={workTime}
+          breakTime={breakTime}
         />
 
         {/* Primary Today's Attendance Operations Control */}
@@ -691,9 +739,19 @@ export default function DashboardScreen() {
 
           {!todayRecord ? (
             <View style={styles.clockInContainer}>
-              <Text style={styles.clockInPrompt}>You have not clocked in today yet.</Text>
-              <TouchableOpacity style={styles.primaryClockInBtn} onPress={handleStartAttendance} disabled={loading}>
-                {loading ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.clockInBtnText}>Start Work Shift</Text>}
+              <Text style={styles.clockInPrompt}>
+                You have not clocked in today yet.
+              </Text>
+              <TouchableOpacity
+                style={styles.primaryClockInBtn}
+                onPress={handleStartAttendance}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color={COLORS.white} />
+                ) : (
+                  <Text style={styles.clockInBtnText}>Start Work Shift</Text>
+                )}
               </TouchableOpacity>
             </View>
           ) : (
@@ -728,20 +786,34 @@ export default function DashboardScreen() {
                   <View style={styles.dividerLine} />
 
                   {/* Horizontal Scroll Selector Pills for Breaks */}
-                  <Text style={styles.breakSelectionTitle}>Choose Break Type:</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsScroll}>
-                    {breakOptions.map((opt) => (
+                  <Text style={styles.breakSelectionTitle}>
+                    Choose Break Type:
+                  </Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.pillsScroll}
+                  >
+                    {breakOptions.map(opt => (
                       <TouchableOpacity
                         key={opt.value}
                         disabled={onBreak}
                         onPress={() => setSelectedBreakType(opt.value)}
                         style={[
                           styles.pill,
-                          selectedBreakType === opt.value && styles.pillSelected,
-                          onBreak && selectedBreakType !== opt.value && { opacity: 0.5 }
+                          selectedBreakType === opt.value &&
+                            styles.pillSelected,
+                          onBreak &&
+                            selectedBreakType !== opt.value && { opacity: 0.5 },
                         ]}
                       >
-                        <Text style={[styles.pillText, selectedBreakType === opt.value && styles.pillTextSelected]}>
+                        <Text
+                          style={[
+                            styles.pillText,
+                            selectedBreakType === opt.value &&
+                              styles.pillTextSelected,
+                          ]}
+                        >
                           {opt.label}
                         </Text>
                       </TouchableOpacity>
@@ -752,8 +824,10 @@ export default function DashboardScreen() {
                   <TouchableOpacity
                     style={[
                       styles.breakToggleBtn,
-                      onBreak ? styles.endBreakBtnColor : styles.startBreakBtnColor,
-                      loading && { opacity: 0.6 }
+                      onBreak
+                        ? styles.endBreakBtnColor
+                        : styles.startBreakBtnColor,
+                      loading && { opacity: 0.6 },
                     ]}
                     onPress={toggleBreak}
                     disabled={loading}
@@ -761,7 +835,11 @@ export default function DashboardScreen() {
                     {loading ? (
                       <ActivityIndicator color={COLORS.white} />
                     ) : (
-                      <Text style={styles.actionBtnText}>{onBreak ? 'End Active Break' : `Start ${selectedBreakType} Break`}</Text>
+                      <Text style={styles.actionBtnText}>
+                        {onBreak
+                          ? 'End Active Break'
+                          : `Start ${selectedBreakType} Break`}
+                      </Text>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -777,18 +855,21 @@ export default function DashboardScreen() {
 
         {/* User Profile Info Panel */}
 
-
         <ProfileCollapsibleCard
-          user={user} setIsProfileCollapsed={setIsProfileCollapsed} isProfileCollapsed={isProfileCollapsed}
+          user={user}
+          setIsProfileCollapsed={setIsProfileCollapsed}
+          isProfileCollapsed={isProfileCollapsed}
         />
 
         {/* Global Exit Trigger */}
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <LogOut size={18} color={COLORS.error} style={{ marginRight: SPACING.sm }} />
+          <LogOut
+            size={18}
+            color={COLORS.error}
+            style={{ marginRight: SPACING.sm }}
+          />
           <Text style={styles.logoutBtnText}>Log Out Session</Text>
         </TouchableOpacity>
-
-
 
         {/* Confirmation Modal overlay component [1] */}
         <ConfirmationModal
@@ -802,7 +883,6 @@ export default function DashboardScreen() {
           type="danger"
           isLoading={clockOutLoading}
         />
-
 
         <ConfirmationModal
           isVisible={showLogoutModal}
@@ -819,7 +899,8 @@ export default function DashboardScreen() {
               index: 0,
               routes: [{ name: 'Login' }], // Replace 'Login' with your actual login route name
             });
-          }} title="Logout"
+          }}
+          title="Logout"
           description="Are you sure you want to Logout?"
           confirmText="Log-Out"
           cancelText="Cancel"
@@ -827,14 +908,13 @@ export default function DashboardScreen() {
           isLoading={clockOutLoading}
         />
 
-
-        {isViewerVisible &&
+        {isViewerVisible && (
           <ImageViewerModal
             isVisible={isViewerVisible}
             onClose={() => setIsViewerVisible(false)}
             imageUrl={selecttedPhotoUrl}
           />
-        }
+        )}
       </ScrollView>
     </View>
   );

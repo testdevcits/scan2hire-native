@@ -57,7 +57,7 @@ export interface ApiResponse<T> {
 
 const ensureSuccess = <T,>(response: ApiResponse<T>): ApiResponse<T> => {
   if (!response.success) {
-    throw { message: response.message || 'Request failed', raw: response };
+    throw { message: response?.message || 'Request failed', raw: response };
   }
   return response;
 };
@@ -78,9 +78,9 @@ export const attendanceService = {
         dataUri: `data:image/jpeg;base64,${selfieBase64}`,
       },
       location: {
-        latitude: location.latitude,
-        longitude: location.longitude,
-        accuracy: location.accuracy ? Math.round(location.accuracy) : 15,
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+        accuracy: location?.accuracy ? Math.round(location?.accuracy) : 15,
       },
     };
 
@@ -126,9 +126,9 @@ export const attendanceService = {
       '/users/attendance/location',
       {
         location: {
-          latitude: location.latitude,
-          longitude: location.longitude,
-          accuracy: location.accuracy ? Math.round(location.accuracy) : 15,
+          latitude: location?.latitude,
+          longitude: location?.longitude,
+          accuracy: location?.accuracy ? Math.round(location?.accuracy) : 15,
         },
       }
     );

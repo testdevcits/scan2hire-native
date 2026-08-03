@@ -35,13 +35,13 @@ const HistoryCard: React.FC<HistoryCardProps> = ({ item }) => {
   const statusCfg = getStatusConfig(item.status);
 
   const clockIn = item.loginAt
-    ? new Date(item.loginAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })
+    ? new Date(item?.loginAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })
     : '--:--';
   const clockOut = item.logoutAt
-    ? new Date(item.logoutAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })
+    ? new Date(item?.logoutAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })
     : '--:--';
 
-  const displayDate = new Date(item.dateKey).toLocaleDateString([], {
+  const displayDate = new Date(item?.dateKey).toLocaleDateString([], {
     weekday: 'short',
     day: 'numeric',
     month: 'short',

@@ -140,15 +140,31 @@ const backgroundOptions = {
   parameters: {},
 };
 
-export const startAttendanceLocationTracking = async () => {
-  await AsyncStorage.setItem(TRACKING_ACTIVE_KEY, 'true');
-  console.log('[attendance:location:bg] Tracking marked active.');
+// export const startAttendanceLocationTracking = async () => {
+//   await AsyncStorage.setItem(TRACKING_ACTIVE_KEY, 'true');
+//   console.log('[attendance:location:bg] Tracking marked active.');
 
+//   if (!BackgroundService.isRunning()) {
+//     console.log('[attendance:location:bg] Starting foreground service.');
+//     await BackgroundService.start(backgroundLocationTask, backgroundOptions);
+//   } else {
+//     console.log('[attendance:location:bg] Foreground service already running.');
+//   }
+// };
+
+// locationTrackingService.ts
+
+export const startAttendanceLocationTracking = async () => {
+  // Check permission FIRST before starting the service
+  const hasPermission = await requestLocationPermissions(); 
+  if (!hasPermission) {
+    console.log('[bg] Cannot start: Permission missing');
+    return;
+  }
+
+  await AsyncStorage.setItem(TRACKING_ACTIVE_KEY, 'true');
   if (!BackgroundService.isRunning()) {
-    console.log('[attendance:location:bg] Starting foreground service.');
     await BackgroundService.start(backgroundLocationTask, backgroundOptions);
-  } else {
-    console.log('[attendance:location:bg] Foreground service already running.');
   }
 };
 
@@ -181,6 +197,7 @@ export const initAttendanceBackgroundFetch = async () => {
         const trackingActive = await AsyncStorage.getItem(TRACKING_ACTIVE_KEY);
         if (trackingActive === 'true') {
           await syncAttendanceLocationOnce('background-fetch');
+          await sleep(SYNC_INTERVAL_MS); // 10 seconds
         }
       } catch (error: any) {
         console.warn('[attendance:location:fetch] Sync failed:', error?.message || error);

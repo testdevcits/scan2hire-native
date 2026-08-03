@@ -14,7 +14,7 @@ export default function SplashScreen() {
       // Using all three of your primary branding colors
       colors={[COLORS.primaryDark, COLORS.primary, COLORS.primaryLight]}
       start={{ x: 0.0, y: 0.0 }} // Starts at the top-left
-      end={{ x: 1.0, y: 1.0 }}   // Ends at the bottom-right
+      end={{ x: 1.0, y: 1.0 }} // Ends at the bottom-right
       style={styles.container}
     >
       {/* Translucent allows the gradient to render behind the notch and status bar area */}
@@ -26,19 +26,18 @@ export default function SplashScreen() {
         source={require('../../assets/images/logo.png')}
         style={styles.logo}
         resizeMode="contain"
-      // If you do not have the image file yet, you can comment this Image block out
+        // If you do not have the image file yet, you can comment this Image block out
       />
 
-
       {/* Styled App Title */}
-      <Text style={styles.title}>Conative IT Solution</Text>
+      {/* <Text style={styles.title}>Conative IT Solution</Text> */}
 
       {/* App Tagline */}
-      <Text style={styles.subtitle}>Seamless Employee Check-In & Check-Out</Text>
+      {/* <Text style={styles.subtitle}>Seamless Employee Check-In & Check-Out</Text> */}
 
       {/* Centered loader at the bottom */}
       <ActivityIndicator
-        size="small"
+        size="large"
         color={COLORS.white}
         style={styles.loader}
       />

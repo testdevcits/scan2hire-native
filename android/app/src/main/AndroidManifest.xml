@@ -43,5 +43,23 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
-    </application>
+       <!-- 1. Activity for Background Location Disclosure -->
+      <!-- Google Play requires a prominent disclosure activity/dialog before asking for background permission -->
+      <activity
+        android:name=".BackgroundLocationActivity"
+        android:label="Location Access Information"
+        android:exported="false" />
+
+      <!-- ADD THIS FOR BACKGROUND FETCH -->
+      <receiver 
+          android:name="com.transistorsoft.rnbackgroundfetch.HeadlessBroadcastReceiver" 
+          android:exported="true" />
+
+      <!-- KEEP ONLY THIS ONE (assuming this is your class name) -->
+      <service
+       android:name=".LocationService"
+       android:enabled="true"
+       android:exported="false"
+       android:foregroundServiceType="location" />
+       </application>
 </manifest>

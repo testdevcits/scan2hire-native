@@ -12,7 +12,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import ImagePicker, { Image as PickerImage } from 'react-native-image-crop-picker';
+import ImagePicker, {
+  Image as PickerImage,
+} from 'react-native-image-crop-picker';
 import { ArrowLeft, Camera, Save, User } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -41,13 +43,16 @@ const ProfileSettingsScreen = () => {
   const [photoUri, setPhotoUri] = useState<string | undefined>();
   const [showPhotoSheet, setShowPhotoSheet] = useState(false);
   const [isViewerVisible, setIsViewerVisible] = useState(false);
-  const [selecttedPhotoUrl, setSelectedPhoto] = useState<string | undefined>('')
-
+  const [selecttedPhotoUrl, setSelectedPhoto] = useState<string | undefined>(
+    '',
+  );
 
   useEffect(() => {
     setName(user?.name || '');
     setMobile(user?.mobile || '');
-    setPhotoUri(user?.profileImage || user?.employeeProfile?.documents?.photo?.url);
+    setPhotoUri(
+      user?.profileImage || user?.employeeProfile?.documents?.photo?.url,
+    );
   }, [user]);
 
   const handlePickedImage = (image: PickerImage) => {
@@ -89,7 +94,10 @@ const ProfileSettingsScreen = () => {
       handlePickedImage(image);
     } catch (error: any) {
       if (error?.code !== 'E_PICKER_CANCELLED') {
-        Alert.alert('Camera Error', error?.message || 'Unable to capture photo.');
+        Alert.alert(
+          'Camera Error',
+          error?.message || 'Unable to capture photo.',
+        );
       }
     }
   };
@@ -100,7 +108,7 @@ const ProfileSettingsScreen = () => {
     //   { text: 'Gallery', onPress: pickPhotoFromGallery },
     //   { text: 'Cancel', style: 'cancel' },
     // ]);
-    setShowPhotoSheet(true)
+    setShowPhotoSheet(true);
   };
 
   const saveProfile = async () => {
@@ -122,21 +130,27 @@ const ProfileSettingsScreen = () => {
         name: cleanName,
         mobile: cleanMobile,
         photoBase64,
-      })
+      }),
     );
 
     if (updateMyProfile.fulfilled.match(result)) {
       Alert.alert('Profile Updated', result.payload.message);
       navigation.goBack();
     } else {
-      Alert.alert('Update Failed', result.payload || 'Unable to update profile.');
+      Alert.alert(
+        'Update Failed',
+        result.payload || 'Unable to update profile.',
+      );
     }
   };
 
   return (
     <View style={styles.safeContainer}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => navigation.goBack()}
+        >
           <ArrowLeft size={22} color={COLORS.textPrimary} />
         </TouchableOpacity>
         <View>
@@ -155,14 +169,24 @@ const ProfileSettingsScreen = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.photoSection}>
-            <Pressable disabled={!photoUri} onPress={() => { setIsViewerVisible(!isViewerVisible), setSelectedPhoto(photoUri) }} style={styles.avatar}>
+            <Pressable
+              disabled={!photoUri}
+              onPress={() => {
+                setIsViewerVisible(!isViewerVisible),
+                  setSelectedPhoto(photoUri);
+              }}
+              style={styles.avatar}
+            >
               {photoUri ? (
                 <Image source={{ uri: photoUri }} style={styles.avatarImage} />
               ) : (
                 <User size={34} color={COLORS.primary} />
               )}
             </Pressable>
-            <TouchableOpacity style={styles.photoButton} onPress={choosePhotoSource}>
+            <TouchableOpacity
+              style={styles.photoButton}
+              onPress={choosePhotoSource}
+            >
               <Camera size={16} color={COLORS.primary} />
               <Text style={styles.photoButtonText}>Upload Profile Photo</Text>
             </TouchableOpacity>
@@ -213,22 +237,19 @@ const ProfileSettingsScreen = () => {
           onCamera={takeProfilePhoto}
           onGallery={pickPhotoFromGallery}
           hasImage={true} // Set true if user already has a photo
-        // onRemove={() => console.log('Remove logic')}
-
+          // onRemove={() => console.log('Remove logic')}
         />
 
-        {isViewerVisible &&
+        {isViewerVisible && (
           <ImageViewerModal
             isVisible={isViewerVisible}
             onClose={() => setIsViewerVisible(false)}
             imageUrl={selecttedPhotoUrl}
           />
-        }
+        )}
       </KeyboardAvoidingView>
     </View>
   );
 };
-
-
 
 export default ProfileSettingsScreen;

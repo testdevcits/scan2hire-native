@@ -48,7 +48,7 @@ const HistoryScreen = () => {
     try {
       const res = await attendanceService.getAttendanceHistory();
       if (res.success && res.data) {
-        setHistory(res.data);
+        setHistory(res?.data);
       }
     } catch (error) {
       console.log('Error pulling history records:', error);

@@ -208,7 +208,7 @@ const ProfileCollapsibleCard: React.FC<ProfileCollapsibleCardProps> = ({
             <ProfileItem 
               icon={CalendarDays} 
               label="Joining Date" 
-              value={user?.employeeProfile?.dateOfJoining ? new Date(user.employeeProfile.dateOfJoining).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'}) : ''} 
+              value={user?.employeeProfile?.dateOfJoining ? new Date(user?.employeeProfile?.dateOfJoining).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'}) : ''} 
             />
             <ProfileItem 
               icon={Users2} 
