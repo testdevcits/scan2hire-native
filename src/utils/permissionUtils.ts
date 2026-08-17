@@ -5,18 +5,26 @@ import Geolocation from 'react-native-geolocation-service';
 export const requestAppPermissions = async (): Promise<boolean> => {
   if (Platform.OS === 'android') {
     try {
-      const foregroundGranted = await PermissionsAndroid.requestMultiple([
+      const permissionsToRequest = [
         PermissionsAndroid.PERMISSIONS.CAMERA,
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-      ]);
+      ];
+
+      if (Number(Platform.Version) >= 33) {
+        permissionsToRequest.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+      }
+
+      const foregroundGranted = await PermissionsAndroid.requestMultiple(permissionsToRequest);
 
       const cameraOk =
         foregroundGranted[PermissionsAndroid.PERMISSIONS.CAMERA] ===
         PermissionsAndroid.RESULTS.GRANTED;
       const locationOk =
         foregroundGranted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] ===
-        PermissionsAndroid.RESULTS.GRANTED;
+          PermissionsAndroid.RESULTS.GRANTED ||
+        foregroundGranted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] ===
+          PermissionsAndroid.RESULTS.GRANTED;
 
       if (!cameraOk || !locationOk) {
         Alert.alert(

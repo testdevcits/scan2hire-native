@@ -14,10 +14,59 @@ const SYNC_INTERVAL_MS = 10000;
 
 const sleep = (time: number) => new Promise<void>((resolve) => setTimeout(resolve, time));
 
+export const checkLocationPermissions = async (): Promise<boolean> => {
+  if (Platform.OS === 'ios') {
+    return true;
+  }
+
+  if (Platform.OS === 'android') {
+    const fineGranted = await PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    );
+    const coarseGranted = await PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION
+    );
+    return fineGranted || coarseGranted;
+  }
+
+  return false;
+};
+
 const requestLocationPermissions = async (): Promise<boolean> => {
   if (Platform.OS === 'ios') {
     const auth = await Geolocation.requestAuthorization('always');
     return auth === 'granted';
+  }
+
+  const fineGranted = await PermissionsAndroid.check(
+    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+  );
+  const coarseGranted = await PermissionsAndroid.check(
+    PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION
+  );
+
+  if (fineGranted || coarseGranted) {
+    if (Number(Platform.Version) >= 29) {
+      const bgGranted = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION
+      );
+      if (!bgGranted) {
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION
+        );
+      }
+    }
+    if (Number(Platform.Version) >= 33) {
+      const notifGranted = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+      );
+      if (!notifGranted) {
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+      }
+    }
+    return true;
   }
 
   const foreground = await PermissionsAndroid.requestMultiple([
@@ -27,7 +76,9 @@ const requestLocationPermissions = async (): Promise<boolean> => {
 
   const fineLocationGranted =
     foreground[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] ===
-    PermissionsAndroid.RESULTS.GRANTED;
+      PermissionsAndroid.RESULTS.GRANTED ||
+    foreground[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] ===
+      PermissionsAndroid.RESULTS.GRANTED;
 
   if (!fineLocationGranted) return false;
 
@@ -79,7 +130,7 @@ export const syncAttendanceLocationOnce = async (source = 'foreground') => {
     return null;
   }
 
-  const hasPermission = await requestLocationPermissions();
+  const hasPermission = (await checkLocationPermissions()) || (await requestLocationPermissions());
   if (!hasPermission) {
     console.warn('[attendance:location:native] Skip sync: location permission denied', { source });
     return null;
@@ -138,6 +189,7 @@ const backgroundOptions = {
   color: '#F04438',
   linkingURI: 'scan2hire://attendance',
   parameters: {},
+  foregroundServiceType: ['location'] as Array<'location'>,
 };
 
 // export const startAttendanceLocationTracking = async () => {

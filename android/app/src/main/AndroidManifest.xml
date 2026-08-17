@@ -43,23 +43,16 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
-       <!-- 1. Activity for Background Location Disclosure -->
-      <!-- Google Play requires a prominent disclosure activity/dialog before asking for background permission -->
-      <activity
-        android:name=".BackgroundLocationActivity"
-        android:label="Location Access Information"
-        android:exported="false" />
-
-      <!-- ADD THIS FOR BACKGROUND FETCH -->
+      <!-- Background fetch receiver -->
       <receiver 
           android:name="com.transistorsoft.rnbackgroundfetch.HeadlessBroadcastReceiver" 
           android:exported="true" />
 
-      <!-- KEEP ONLY THIS ONE (assuming this is your class name) -->
+      <!-- Foreground location service declaration for react-native-background-actions (Android 14+) -->
       <service
-       android:name=".LocationService"
-       android:enabled="true"
-       android:exported="false"
-       android:foregroundServiceType="location" />
-       </application>
+        android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask"
+        android:enabled="true"
+        android:exported="false"
+        android:foregroundServiceType="location" />
+    </application>
 </manifest>
