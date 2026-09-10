@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import React from 'react';
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
+import AppText from '../../components/common/AppText';
 
 interface TimelineEvent {
   id: string;
@@ -15,7 +16,7 @@ interface TodaystimeLinesProps {
 const TodaystimeLines = ({ timelineEvents }: TodaystimeLinesProps) => {
   return (
     <View style={styles.timelineCard}>
-      <Text style={styles.cardSectionHeader}>Today's Timeline</Text>
+      <AppText style={styles.cardSectionHeader}>Today's Timeline</AppText>
       <View style={styles.timelineContainer}>
         {timelineEvents.map((ev, idx) => (
           <View key={ev.id} style={styles.timelineRow}>
@@ -26,8 +27,8 @@ const TodaystimeLines = ({ timelineEvents }: TodaystimeLinesProps) => {
               )}
             </View>
             <View style={styles.timelineRightContent}>
-              <Text style={styles.timelineNodeTitle}>{ev?.title}</Text>
-              <Text style={styles.timelineNodeTime}>{ev?.time}</Text>
+              <AppText style={styles.timelineNodeTitle}>{ev?.title}</AppText>
+              <AppText style={styles.timelineNodeTime}>{ev?.time}</AppText>
             </View>
           </View>
         ))}

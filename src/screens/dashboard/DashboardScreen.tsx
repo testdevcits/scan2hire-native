@@ -39,6 +39,7 @@ import {
   stopAttendanceLocationTracking,
   syncAttendanceLocationOnce,
 } from '../../services/locationTrackingService';
+import AppText from '../../components/common/AppText';
 
 interface AuthState {
   user: UserProfile | null;
@@ -731,11 +732,11 @@ export default function DashboardScreen() {
           <View style={styles.warningBanner}>
             <View style={styles.warningRow}>
               <AlertTriangle size={20} color={COLORS.error} style={{ marginRight: SPACING.sm }} />
-              <Text style={styles.warningTitle}>Documents Pending</Text>
+              <AppText style={styles.warningTitle}>Documents Pending</AppText>
             </View>
-            <Text style={styles.warningText}>
+            <AppText style={styles.warningText}>
               Please upload all required documents. Missing: {missingDocs.join(', ')}.
-            </Text>
+            </AppText>
           </View>
         )} */}
 
@@ -751,10 +752,10 @@ export default function DashboardScreen() {
 
         {/* Primary Today's Attendance Operations Control */}
         <View style={styles.controlCard}>
-          <Text style={styles.controlTitle}>Today's Attendance Operations</Text>
-          <Text style={styles.controlSubtitle}>
+          <AppText style={styles.controlTitle}>Today's Attendance Operations</AppText>
+          <AppText style={styles.controlSubtitle}>
             Record work shifts and momentary rest periods
-          </Text>
+          </AppText>
 
           {!todayRecord ? (
             <View style={styles.clockInContainer}>
@@ -768,7 +769,7 @@ export default function DashboardScreen() {
                 ) : (
                   <>
                     <LogOut size={20} color={COLORS.white} style={styles.btnIcon} />
-                    <Text style={styles.primaryBtnText}>Start Work Shift</Text>
+                    <AppText style={styles.primaryBtnText}>Start Work Shift</AppText>
                   </>
                 )}
               </TouchableOpacity>
@@ -787,12 +788,12 @@ export default function DashboardScreen() {
                     ) : (
                       <>
                         <LogOut size={20} color={COLORS.white} style={styles.btnIcon} />
-                        <Text style={styles.primaryBtnText}>Clock Out</Text>
+                        <AppText style={styles.primaryBtnText}>Clock Out</AppText>
                       </>
                     )}
                   </TouchableOpacity>
 
-                  <Text style={styles.chooseBreakTitle}>CHOOSE BREAK TYPE</Text>
+                  <AppText style={styles.chooseBreakTitle}>CHOOSE BREAK TYPE</AppText>
 
                   <ScrollView
                     horizontal
@@ -812,7 +813,7 @@ export default function DashboardScreen() {
                             onBreak && !isSelected && { opacity: 0.5 },
                           ]}
                         >
-                          <Text
+                          <AppText
                             style={[
                               styles.breakChipText,
                               isSelected
@@ -821,7 +822,7 @@ export default function DashboardScreen() {
                             ]}
                           >
                             {opt.label}
-                          </Text>
+                          </AppText>
                         </TouchableOpacity>
                       );
                     })}
@@ -845,7 +846,7 @@ export default function DashboardScreen() {
                           color={onBreak ? COLORS.white : '#C84C00'}
                           style={styles.btnIcon}
                         />
-                        <Text
+                        <AppText
                           style={[
                             styles.secondaryBtnText,
                             onBreak && { color: COLORS.white },
@@ -857,7 +858,7 @@ export default function DashboardScreen() {
                                 breakOptions.find(o => o.value === selectedBreakType)?.label ||
                                 selectedBreakType
                               } Break`}
-                        </Text>
+                        </AppText>
                       </>
                     )}
                   </TouchableOpacity>
@@ -887,7 +888,7 @@ export default function DashboardScreen() {
             color={COLORS.error}
             style={{ marginRight: SPACING.sm }}
           />
-          <Text style={styles.logoutBtnText}>Log Out Session</Text>
+          <AppText style={styles.logoutBtnText}>Log Out Session</AppText>
         </TouchableOpacity>
 
         {/* Confirmation Modal overlay component [1] */}

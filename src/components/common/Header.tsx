@@ -19,6 +19,7 @@ import {
 
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import { UserProfile } from '../../types/user';
+import AppText from './AppText';
 
 interface HeaderProps {
   user?: UserProfile | null;
@@ -63,10 +64,10 @@ const Header = ({
         )}
 
         <View style={styles.userInfo}>
-          <Text style={styles.nameText} numberOfLines={1}>
+          <AppText style={styles.nameText} numberOfLines={1}>
             {user?.name}
-          </Text>
-          <Text style={styles.empIdText}>ID: {employeeId}</Text>
+          </AppText>
+          <AppText style={styles.empIdText}>ID: {employeeId}</AppText>
         </View>
       </Pressable>
 
@@ -102,7 +103,7 @@ const Header = ({
                   color={COLORS.textPrimary}
                   style={styles.menuItemIcon}
                 />
-                <Text style={styles.menuItemText}>Refresh Status</Text>
+                <AppText style={styles.menuItemText}>Refresh Status</AppText>
               </TouchableOpacity>
             )}
 
@@ -116,7 +117,7 @@ const Header = ({
                   color={COLORS.textPrimary}
                   style={styles.menuItemIcon}
                 />
-                <Text style={styles.menuItemText}>Settings</Text>
+                <AppText style={styles.menuItemText}>Settings</AppText>
               </TouchableOpacity>
             )}
 
@@ -134,9 +135,9 @@ const Header = ({
                 color={COLORS.error}
                 style={styles.menuItemIcon}
               />
-              <Text style={[styles.menuItemText, { color: COLORS.error }]}>
+              <AppText style={[styles.menuItemText, { color: COLORS.error }]}>
                 Log Out
-              </Text>
+              </AppText>
             </TouchableOpacity>
           </View>
         </Pressable>

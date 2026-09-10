@@ -13,7 +13,7 @@
 //           >
 //             <View style={styles.profileHeaderLabelBlock}>
 //               <User size={20} color={COLORS.primary} style={{ marginRight: SPACING.sm }} />
-//               <Text style={styles.profileCardTitle}>My Profile Overview</Text>
+//               <AppText style={styles.profileCardTitle}>My Profile Overview</AppText>
 //             </View>
 //             {isProfileCollapsed ? <ChevronDown size={20} color={COLORS.textSecondary} /> : <ChevronUp size={20} color={COLORS.textSecondary} />}
 //           </TouchableOpacity>
@@ -21,37 +21,37 @@
 //           {!isProfileCollapsed && (
 //             <View style={styles.profileCollapsedBody}>
 //               <View style={styles.profileGridItem}>
-//                 <Text style={styles.profileFieldLabel}>Employee ID</Text>
-//                 <Text style={styles.profileFieldValue}>{user?.employeeProfile?.employeeId || 'N/A'}</Text>
+//                 <AppText style={styles.profileFieldLabel}>Employee ID</AppText>
+//                 <AppText style={styles.profileFieldValue}>{user?.employeeProfile?.employeeId || 'N/A'}</AppText>
 //               </View>
 
 //               <View style={styles.profileGridItem}>
-//                 <Text style={styles.profileFieldLabel}>Department</Text>
-//                 <Text style={styles.profileFieldValue}>{user?.employeeProfile?.department || 'N/A'}</Text>
+//                 <AppText style={styles.profileFieldLabel}>Department</AppText>
+//                 <AppText style={styles.profileFieldValue}>{user?.employeeProfile?.department || 'N/A'}</AppText>
 //               </View>
 
 //               <View style={styles.profileGridItem}>
-//                 <Text style={styles.profileFieldLabel}>Designation</Text>
-//                 <Text style={styles.profileFieldValue}>{user?.employeeProfile?.designation || 'N/A'}</Text>
+//                 <AppText style={styles.profileFieldLabel}>Designation</AppText>
+//                 <AppText style={styles.profileFieldValue}>{user?.employeeProfile?.designation || 'N/A'}</AppText>
 //               </View>
 
 //               <View style={styles.profileGridItem}>
-//                 <Text style={styles.profileFieldLabel}>Joining Date</Text>
-//                 <Text style={styles.profileFieldValue}>
+//                 <AppText style={styles.profileFieldLabel}>Joining Date</AppText>
+//                 <AppText style={styles.profileFieldValue}>
 //                   {user?.employeeProfile?.dateOfJoining
 //                     ? new Date(user.employeeProfile.dateOfJoining).toLocaleDateString()
 //                     : 'N/A'}
-//                 </Text>
+//                 </AppText>
 //               </View>
 
 //               <View style={styles.profileGridItem}>
-//                 <Text style={styles.profileFieldLabel}>Reporting Manager</Text>
-//                 <Text style={styles.profileFieldValue}>{user?.employeeProfile?.reportingManager || 'N/A'}</Text>
+//                 <AppText style={styles.profileFieldLabel}>Reporting Manager</AppText>
+//                 <AppText style={styles.profileFieldValue}>{user?.employeeProfile?.reportingManager || 'N/A'}</AppText>
 //               </View>
 
 //               <View style={styles.profileGridItem}>
-//                 <Text style={styles.profileFieldLabel}>Emp Type</Text>
-//                 <Text style={styles.profileFieldValue}>{user?.employeeProfile?.employeeType || 'N/A'}</Text>
+//                 <AppText style={styles.profileFieldLabel}>Emp Type</AppText>
+//                 <AppText style={styles.profileFieldValue}>{user?.employeeProfile?.employeeType || 'N/A'}</AppText>
 //               </View>
 //             </View>
 //           )}

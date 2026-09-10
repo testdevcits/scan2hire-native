@@ -30,10 +30,10 @@ export default function SplashScreen() {
       />
 
       {/* Styled App Title */}
-      {/* <Text style={styles.title}>Conative IT Solution</Text> */}
+      {/* <AppText style={styles.title}>Conative IT Solution</AppText> */}
 
       {/* App Tagline */}
-      {/* <Text style={styles.subtitle}>Seamless Employee Check-In & Check-Out</Text> */}
+      {/* <AppText style={styles.subtitle}>Seamless Employee Check-In & Check-Out</AppText> */}
 
       {/* Centered loader at the bottom */}
       <ActivityIndicator

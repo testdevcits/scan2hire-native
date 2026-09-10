@@ -20,6 +20,7 @@ import { ConfirmationModal, Header, HistoryCard } from '../../components';
 import styles from './styles.history';
 import { useNavigation } from '@react-navigation/native';
 import { logoutUser } from '../../redux/slices/authSlice';
+import AppText from '../../components/common/AppText';
 
 type FilterType = 'all' | 'today' | 'yesterday';
 interface AuthState {
@@ -102,10 +103,10 @@ const HistoryScreen = () => {
 
         {/* Screen Header */}
         <View style={styles.header}>
-          <Text style={styles.titleText}>Attendance Records</Text>
-          <Text style={styles.subtitleText}>
+          <AppText style={styles.titleText}>Attendance Records</AppText>
+          <AppText style={styles.subtitleText}>
             Review your recent punch activity
-          </Text>
+          </AppText>
         </View>
 
         {/* Quick Date-Filter Bar */}
@@ -120,14 +121,14 @@ const HistoryScreen = () => {
               ]}
               activeOpacity={0.7}
             >
-              <Text
+              <AppText
                 style={[
                   styles.filterTabText,
                   activeFilter === filter && styles.filterTabTextActive,
                 ]}
               >
                 {filter.toUpperCase()}
-              </Text>
+              </AppText>
             </TouchableOpacity>
           ))}
         </View>
@@ -136,7 +137,7 @@ const HistoryScreen = () => {
         {loading ? (
           <View style={styles.loaderContainer}>
             <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loaderText}>Loading history...</Text>
+            <AppText style={styles.loaderText}>Loading history...</AppText>
           </View>
         ) : (
           <FlatList
@@ -155,14 +156,14 @@ const HistoryScreen = () => {
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>
+                <AppText style={styles.emptyText}>
                   No attendance records found.
-                </Text>
-                <Text style={styles.emptySubText}>
+                </AppText>
+                <AppText style={styles.emptySubText}>
                   {activeFilter === 'all'
                     ? 'Swipe down to sync recent data.'
                     : `No records match the filter: ${activeFilter.toUpperCase()}`}
-                </Text>
+                </AppText>
               </View>
             }
           />

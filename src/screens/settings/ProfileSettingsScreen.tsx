@@ -34,6 +34,7 @@ import { updateMyProfile } from '../../redux/slices/authSlice';
 import { UserProfile } from '../../types/user';
 import styles from './styles.profilesettings';
 import { Button, Input } from '../../components';
+import AppText from '../../components/common/AppText';
 
 const PhotoSourceSheet = lazy(
   () => import('../../components/common/PhotoSourceSheet'),
@@ -180,16 +181,16 @@ const ProfileSettingsScreen = () => {
             <ArrowLeft size={20} color={COLORS.textPrimary} />
           </TouchableOpacity>
           <View>
-            <Text style={styles.headerTitle}>Profile Settings</Text>
-            <Text style={styles.headerSubtitle}>
+            <AppText style={styles.headerTitle}>Profile Settings</AppText>
+            <AppText style={styles.headerSubtitle}>
               Manage personal info & credentials
-            </Text>
+            </AppText>
           </View>
         </View>
 
         <View style={styles.statusBadge}>
           <View style={styles.statusDot} />
-          <Text style={styles.statusText}>Active</Text>
+          <AppText style={styles.statusText}>Active</AppText>
         </View>
       </View>
 
@@ -237,13 +238,13 @@ const ProfileSettingsScreen = () => {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.userFullName}>
+            <AppText style={styles.userFullName}>
               {name || user?.name || 'Employee'}
-            </Text>
-            <Text style={styles.userRoleSubtitle}>
+            </AppText>
+            <AppText style={styles.userRoleSubtitle}>
               {user?.role ? user.role.toUpperCase() : 'TEAM MEMBER'} • ID:{' '}
               {user?.employeeProfile?.employeeId || 'N/A'}
-            </Text>
+            </AppText>
 
             <TouchableOpacity
               style={styles.changePhotoButton}
@@ -251,7 +252,7 @@ const ProfileSettingsScreen = () => {
               activeOpacity={0.75}
             >
               <Camera size={14} color={COLORS.primary} />
-              <Text style={styles.changePhotoText}>Change Profile Photo</Text>
+              <AppText style={styles.changePhotoText}>Change Profile Photo</AppText>
             </TouchableOpacity>
           </Animated.View>
 
@@ -264,7 +265,7 @@ const ProfileSettingsScreen = () => {
               <View style={styles.sectionIconContainer}>
                 <UserCheck size={18} color={COLORS.primary} />
               </View>
-              <Text style={styles.sectionTitle}>Personal Details</Text>
+              <AppText style={styles.sectionTitle}>Personal Details</AppText>
             </View>
 
             <Input
@@ -296,7 +297,7 @@ const ProfileSettingsScreen = () => {
               <View style={styles.sectionIconContainer}>
                 <ShieldCheck size={18} color={COLORS.primary} />
               </View>
-              <Text style={styles.sectionTitle}>Account Information</Text>
+              <AppText style={styles.sectionTitle}>Account Information</AppText>
             </View>
 
             <Input

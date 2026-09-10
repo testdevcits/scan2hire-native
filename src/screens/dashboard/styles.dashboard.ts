@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.28,
     shadowRadius: 10,
     elevation: 5,
+    width: '100%',
   },
   primaryBtnText: {
     fontFamily: FONTS.bold,
@@ -164,6 +165,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
   },
   secondaryBreakBtnActive: {
     backgroundColor: '#EF4444',
