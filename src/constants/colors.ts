@@ -7,6 +7,18 @@ export const COLORS = {
   primaryLight: '#F25D23',
   primaryDark: '#D93B1E',
 
+  // Operations Accent & Operations
+  accentOrange: '#F25C05',
+  orangeLight: '#FFF7ED',
+  orangeBorder: '#FFD6C0',
+  orangeText: '#C84C00',
+
+  // Slate Variations
+  slateDark: '#0F172A',
+  slateMuted: '#64748B',
+  slateSubtle: '#94A3B8',
+  slateText: '#334155',
+
   // Secondary
   secondary: '#FFA826',
   secondaryLight: '#FFC04D',

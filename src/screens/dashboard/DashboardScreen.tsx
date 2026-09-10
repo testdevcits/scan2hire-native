@@ -93,8 +93,15 @@ export default function DashboardScreen() {
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selecttedPhotoUrl, setSelectedPhoto] = useState('');
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const [shiftLoading, setShiftLoading] = useState<boolean>(false);
+  const [breakLoading, setBreakLoading] = useState<boolean>(false);
+  const [statusLoading, setStatusLoading] = useState<boolean>(false);
   const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
+  const todayRecordRef = useRef<AttendanceRecord | null>(todayRecord);
+
+  useEffect(() => {
+    todayRecordRef.current = todayRecord;
+  }, [todayRecord]);
 
   const TodaysSelfie = todayRecord?.loginSelfie?.url || '';
 
@@ -148,7 +155,6 @@ export default function DashboardScreen() {
       stopTimer();
       calculateStaticTimes();
     }
-    // Timer uses the latest todayRecord snapshot and is restarted intentionally here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todayRecord, onBreak]);
 
@@ -160,7 +166,6 @@ export default function DashboardScreen() {
     }
 
     return () => stopLocationSync(false);
-    // Location polling must start/stop only when running status changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todayRecord?.status]);
 
@@ -176,13 +181,12 @@ export default function DashboardScreen() {
     );
 
     return () => subscription.remove();
-    // Foreground refresh should only depend on attendance running state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todayRecord?.status]);
 
   const fetchTodayStatus = async () => {
     try {
-      setLoading(true);
+      setStatusLoading(true);
       const res = await attendanceService.getAttendanceHistory();
       if (res.success && res.data && res.data.length > 0) {
         const todayStr = new Date().toISOString().split('T')[0];
@@ -198,7 +202,6 @@ export default function DashboardScreen() {
                   }m. Work time is paused.`,
             );
           }
-          // Check if currently on an active break (startAt exists but no endAt)
           const activeBreak = match.breaks?.find(b => !b.endAt);
           if (activeBreak) {
             setOnBreak(true);
@@ -223,45 +226,97 @@ export default function DashboardScreen() {
       setActionMessage(getApiMessage(e, 'Unable to fetch attendance status.'));
       console.log('Error fetching daily status:', e);
     } finally {
-      setLoading(false);
+      setStatusLoading(false);
     }
+  };
+
+  const parseDateMs = (dateStr?: string | null): number => {
+    if (!dateStr) return 0;
+    let normalized = dateStr.trim().replace(' ', 'T');
+    if (
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(normalized) &&
+      !normalized.endsWith('Z') &&
+      !/[+-]\d{2}:\d{2}$/.test(normalized)
+    ) {
+      normalized += 'Z';
+    }
+    const ms = new Date(normalized).getTime();
+    return isNaN(ms) ? new Date(dateStr).getTime() : ms;
+  };
+
+  const computeAttendanceTimes = (
+    record: AttendanceRecord | null,
+    nowMs: number,
+  ) => {
+    if (!record || !record.loginAt) {
+      return {
+        totalTimeSecs: 0,
+        workTimeSecs: 0,
+        breakTimeSecs: 0,
+      };
+    }
+
+    const loginMs = parseDateMs(record.loginAt);
+    if (!loginMs) {
+      return {
+        totalTimeSecs: 0,
+        workTimeSecs: 0,
+        breakTimeSecs: 0,
+      };
+    }
+
+    const endMs = record.logoutAt ? parseDateMs(record.logoutAt) : nowMs;
+    const elapsedTotalSecs = Math.max(0, Math.floor((endMs - loginMs) / 1000));
+
+    let completedBreakSecs = 0;
+    let activeBreakSecs = 0;
+
+    if (record.breaks && Array.isArray(record.breaks)) {
+      record.breaks.forEach(b => {
+        const bStartMs = parseDateMs(b.startAt);
+        if (!bStartMs) return;
+
+        if (b.endAt) {
+          const bEndMs = parseDateMs(b.endAt);
+          if (bEndMs > bStartMs) {
+            completedBreakSecs += Math.floor((bEndMs - bStartMs) / 1000);
+          }
+        } else {
+          if (nowMs > bStartMs) {
+            activeBreakSecs += Math.floor((nowMs - bStartMs) / 1000);
+          }
+        }
+      });
+    }
+
+    const totalBreakSecs = Math.max(0, completedBreakSecs + activeBreakSecs);
+    const totalWorkSecs = Math.max(0, elapsedTotalSecs - totalBreakSecs);
+
+    return {
+      totalTimeSecs: elapsedTotalSecs,
+      workTimeSecs: totalWorkSecs,
+      breakTimeSecs: totalBreakSecs,
+    };
+  };
+
+  const updateTimer = () => {
+    const rec = todayRecordRef.current;
+    if (!rec || rec.status !== 'running') return;
+    const { totalTimeSecs, workTimeSecs, breakTimeSecs } = computeAttendanceTimes(
+      rec,
+      Date.now(),
+    );
+    setTotalTime(formatSeconds(totalTimeSecs));
+    setWorkTime(formatSeconds(workTimeSecs));
+    setBreakTime(formatSeconds(breakTimeSecs));
   };
 
   // Live Timer Computations
   const startTimer = () => {
     stopTimer();
+    updateTimer();
     timerRef.current = setInterval(() => {
-      if (!todayRecord) return;
-
-      const now = new Date().getTime();
-      const login = new Date(todayRecord.loginAt).getTime();
-
-      // Total elapsed seconds since Login
-      const elapsedTotalSecs = Math.floor((now - login) / 1000);
-
-      // Compute break seconds
-      let completedBreakSecs = 0;
-      let activeBreakSecs = 0;
-
-      todayRecord.breaks?.forEach(b => {
-        if (b.endAt) {
-          completedBreakSecs += Math.floor(
-            (new Date(b.endAt).getTime() - new Date(b.startAt).getTime()) /
-              1000,
-          );
-        } else {
-          activeBreakSecs += Math.floor(
-            (now - new Date(b.startAt).getTime()) / 1000,
-          );
-        }
-      });
-
-      const totalBreakSecs = completedBreakSecs + activeBreakSecs;
-      const totalWorkSecs = elapsedTotalSecs - totalBreakSecs;
-
-      setTotalTime(formatSeconds(elapsedTotalSecs));
-      setBreakTime(formatSeconds(totalBreakSecs));
-      setWorkTime(formatSeconds(totalWorkSecs > 0 ? totalWorkSecs : 0));
+      updateTimer();
     }, 1000);
   };
 
@@ -419,34 +474,20 @@ export default function DashboardScreen() {
   };
 
   const calculateStaticTimes = () => {
-    if (!todayRecord) {
+    const rec = todayRecordRef.current || todayRecord;
+    if (!rec) {
       setTotalTime('00:00:00');
       setWorkTime('00:00:00');
       setBreakTime('00:00:00');
       return;
     }
-
-    const login = new Date(todayRecord.loginAt).getTime();
-    const logout = todayRecord.logoutAt
-      ? new Date(todayRecord.logoutAt).getTime()
-      : new Date().getTime();
-    const elapsedTotalSecs = Math.floor((logout - login) / 1000);
-
-    let breakSecs = 0;
-    todayRecord.breaks?.forEach(b => {
-      const breakEnd = b.endAt
-        ? new Date(b.endAt).getTime()
-        : new Date().getTime();
-      breakSecs += Math.floor(
-        (breakEnd - new Date(b.startAt).getTime()) / 1000,
-      );
-    });
-
-    const workSecs = elapsedTotalSecs - breakSecs;
-
-    setTotalTime(formatSeconds(elapsedTotalSecs));
-    setBreakTime(formatSeconds(breakSecs));
-    setWorkTime(formatSeconds(workSecs > 0 ? workSecs : 0));
+    const { totalTimeSecs, workTimeSecs, breakTimeSecs } = computeAttendanceTimes(
+      rec,
+      rec.logoutAt ? parseDateMs(rec.logoutAt) : Date.now(),
+    );
+    setTotalTime(formatSeconds(totalTimeSecs));
+    setWorkTime(formatSeconds(workTimeSecs));
+    setBreakTime(formatSeconds(breakTimeSecs));
   };
 
   const formatSeconds = (totalSeconds: number): string => {
@@ -512,7 +553,7 @@ export default function DashboardScreen() {
         return;
       }
 
-      setLoading(true);
+      setShiftLoading(true);
       try {
         const coords = await readCurrentLocation();
         const res = await attendanceService.startAttendance(base64Data, coords);
@@ -549,10 +590,10 @@ export default function DashboardScreen() {
           text2: message,
         });
       } finally {
-        setLoading(false);
+        setShiftLoading(false);
       }
     } catch (err: any) {
-      setLoading(false);
+      setShiftLoading(false);
       Alert.alert('Camera Error', err?.message || 'Unable to open camera.');
     }
   };
@@ -599,7 +640,7 @@ export default function DashboardScreen() {
 
   const toggleBreak = async () => {
     try {
-      setLoading(true);
+      setBreakLoading(true);
       if (!onBreak) {
         const res = await attendanceService.startBreak(selectedBreakType);
         if (res.success) {
@@ -642,7 +683,7 @@ export default function DashboardScreen() {
       setActionMessage(message);
       Alert.alert('Request Failed', message);
     } finally {
-      setLoading(false);
+      setBreakLoading(false);
     }
   };
 
@@ -760,11 +801,14 @@ export default function DashboardScreen() {
           {!todayRecord ? (
             <View style={styles.clockInContainer}>
               <TouchableOpacity
-                style={styles.primaryClockOutBtn}
+                style={[
+                  styles.primaryClockOutBtn,
+                  (shiftLoading || breakLoading) && { opacity: 0.7 },
+                ]}
                 onPress={handleStartAttendance}
-                disabled={loading}
+                disabled={shiftLoading || breakLoading}
               >
-                {loading ? (
+                {shiftLoading ? (
                   <ActivityIndicator color={COLORS.white} />
                 ) : (
                   <>
@@ -779,11 +823,14 @@ export default function DashboardScreen() {
               {todayRecord.status === 'running' && (
                 <>
                   <TouchableOpacity
-                    style={[styles.primaryClockOutBtn, loading && { opacity: 0.7 }]}
+                    style={[
+                      styles.primaryClockOutBtn,
+                      (shiftLoading || breakLoading) && { opacity: 0.7 },
+                    ]}
                     onPress={handleEndAttendance}
-                    disabled={loading}
+                    disabled={shiftLoading || breakLoading}
                   >
-                    {loading ? (
+                    {shiftLoading ? (
                       <ActivityIndicator color={COLORS.white} />
                     ) : (
                       <>
@@ -805,12 +852,14 @@ export default function DashboardScreen() {
                       return (
                         <TouchableOpacity
                           key={opt.value}
-                          disabled={onBreak}
+                          disabled={onBreak || breakLoading}
                           onPress={() => setSelectedBreakType(opt.value)}
                           style={[
                             styles.breakChip,
-                            isSelected ? styles.breakChipActive : styles.breakChipInactive,
-                            onBreak && !isSelected && { opacity: 0.5 },
+                            isSelected
+                              ? styles.breakChipActive
+                              : styles.breakChipInactive,
+                            (onBreak || breakLoading) && !isSelected && { opacity: 0.5 },
                           ]}
                         >
                           <AppText
@@ -832,18 +881,18 @@ export default function DashboardScreen() {
                     style={[
                       styles.secondaryBreakBtn,
                       onBreak && styles.secondaryBreakBtnActive,
-                      loading && { opacity: 0.7 },
+                      (shiftLoading || breakLoading) && { opacity: 0.7 },
                     ]}
                     onPress={toggleBreak}
-                    disabled={loading}
+                    disabled={shiftLoading || breakLoading}
                   >
-                    {loading ? (
-                      <ActivityIndicator color={onBreak ? COLORS.white : '#C84C00'} />
+                    {breakLoading ? (
+                      <ActivityIndicator color={onBreak ? COLORS.white : COLORS.orangeText} />
                     ) : (
                       <>
                         <Clock
                           size={18}
-                          color={onBreak ? COLORS.white : '#C84C00'}
+                          color={onBreak ? COLORS.white : COLORS.orangeText}
                           style={styles.btnIcon}
                         />
                         <AppText
@@ -888,7 +937,7 @@ export default function DashboardScreen() {
             color={COLORS.error}
             style={{ marginRight: SPACING.sm }}
           />
-          <AppText style={styles.logoutBtnText}>Log Out Session</AppText>
+          <AppText style={styles.logoutBtnText}>Log Out</AppText>
         </TouchableOpacity>
 
         {/* Confirmation Modal overlay component [1] */}
