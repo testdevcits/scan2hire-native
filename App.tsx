@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
 import { store } from './src/app/store';
 import AppNavigator from './src/navigations/AppNavigator';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar, View } from 'react-native';
 import { COLORS } from './src/constants';
 import Toast from 'react-native-toast-message';
@@ -33,16 +33,18 @@ export default function App() {
           {/* 4. Context for Bottom Sheet Modals */}
           <BottomSheetModalProvider>
             <StatusBar
-              barStyle={'light-content'}
+              barStyle={'dark-content'}
               backgroundColor={COLORS.primary}
             />
-            {/* Real-time professional offline/online banner */}
-            <OfflineBanner />
-            <View style={{ flex: 1, backgroundColor: COLORS.background }}>
-              <NavigationContainer>
-                <AppNavigator />
-              </NavigationContainer>
-            </View>
+            <SafeAreaView style={{ flex: 1 }}>
+              {/* Real-time professional offline/online banner */}
+              <OfflineBanner />
+              <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+                <NavigationContainer>
+                  <AppNavigator />
+                </NavigationContainer>
+              </View>
+            </SafeAreaView>
 
             {/* 5. Toast stays at the very bottom of the JSX tree to stay on top */}
             <Toast config={toastConfig} />

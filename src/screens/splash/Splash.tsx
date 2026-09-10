@@ -12,7 +12,7 @@ export default function SplashScreen() {
   return (
     <LinearGradient
       // Using all three of your primary branding colors
-      colors={[COLORS.primaryDark, COLORS.primary, COLORS.primaryLight]}
+      colors={[COLORS.white, COLORS.white, COLORS.white]}
       start={{ x: 0.0, y: 0.0 }} // Starts at the top-left
       end={{ x: 1.0, y: 1.0 }} // Ends at the bottom-right
       style={styles.container}
@@ -38,7 +38,7 @@ export default function SplashScreen() {
       {/* Centered loader at the bottom */}
       <ActivityIndicator
         size="large"
-        color={COLORS.white}
+        color={COLORS.primary}
         style={styles.loader}
       />
     </LinearGradient>
