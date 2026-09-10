@@ -11,4 +11,4 @@ export const FONTS = {
   boldItalic: 'DMSans-BoldItalic',
 } as const;
 
-export default FONTS;// fonts.ts
+export default FONTS; // fonts.ts

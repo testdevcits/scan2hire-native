@@ -33,28 +33,28 @@ interface AuthState {
   error: string | null;
 }
 // Thunk to check if a token exists on startup
-export const checkStoredToken = createAsyncThunk<AuthPayload, void, { rejectValue: string }>(
-  'auth/checkStoredToken',
-  async (_, { rejectWithValue }) => {
-    try {
-      const savedToken = await AsyncStorage.getItem('userToken');
-      if (savedToken) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
-        const response = await axios.get(`${BASE_URL}/users/me`);
-        const userData = response.data.data || response.data;
+export const checkStoredToken = createAsyncThunk<
+  AuthPayload,
+  void,
+  { rejectValue: string }
+>('auth/checkStoredToken', async (_, { rejectWithValue }) => {
+  try {
+    const savedToken = await AsyncStorage.getItem('userToken');
+    if (savedToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+      const response = await axios.get(`${BASE_URL}/users/me`);
+      const userData = response.data.data || response.data;
 
-
-        console.log("=====checkStoredToken==",userData)
-        return { token: savedToken, user: userData };
-      }
-      return { token: null, user: null };
-    } catch (error: any) {
-      await AsyncStorage.removeItem('userToken');
-      delete axios.defaults.headers.common['Authorization'];
-      return rejectWithValue(error.response?.data?.message || 'Session expired');
+      console.log('=====checkStoredToken==', userData);
+      return { token: savedToken, user: userData };
     }
+    return { token: null, user: null };
+  } catch (error: any) {
+    await AsyncStorage.removeItem('userToken');
+    delete axios.defaults.headers.common['Authorization'];
+    return rejectWithValue(error.response?.data?.message || 'Session expired');
   }
-);
+});
 
 // Thunk for Logging In
 // export const loginUser = createAsyncThunk<AuthPayload, LoginPayload, { rejectValue: string }>(
@@ -77,45 +77,45 @@ export const checkStoredToken = createAsyncThunk<AuthPayload, void, { rejectValu
 //   }
 // );
 
-
 // src/redux/authSlice.js
 
-export const loginUser = createAsyncThunk<AuthPayload, LoginPayload, { rejectValue: string }>(
-  'auth/loginUser',
-  async ({ email, password }, { rejectWithValue }) => {
-    try {
-      // 1. Authenticate
-      const response = await axios.post(`${BASE_URL}/users/login`, { email, password });
-      
-      if (response.data.success) {
-        const { token } = response.data.data;
-        
-        // 2. Save token and set header for the next immediate call
-        await AsyncStorage.setItem('userToken', token);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+export const loginUser = createAsyncThunk<
+  AuthPayload,
+  LoginPayload,
+  { rejectValue: string }
+>('auth/loginUser', async ({ email, password }, { rejectWithValue }) => {
+  try {
+    // 1. Authenticate
+    const response = await axios.post(`${BASE_URL}/users/login`, {
+      email,
+      password,
+    });
 
-        // 3. Fetch the FULL profile immediately
-        const profileResponse = await axios.get(`${BASE_URL}/users/me`);
-        const fullUserData = profileResponse?.data?.data || profileResponse?.data;
+    if (response.data.success) {
+      const { token } = response.data.data;
 
-        return { token, user: fullUserData };
-      }
-      return rejectWithValue(response.data.message || 'Login failed');
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Network error');
+      // 2. Save token and set header for the next immediate call
+      await AsyncStorage.setItem('userToken', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      // 3. Fetch the FULL profile immediately
+      const profileResponse = await axios.get(`${BASE_URL}/users/me`);
+      const fullUserData = profileResponse?.data?.data || profileResponse?.data;
+
+      return { token, user: fullUserData };
     }
+    return rejectWithValue(response.data.message || 'Login failed');
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data?.message || 'Network error');
   }
-);
+});
 
 // Thunk for Logging Out
-export const logoutUser = createAsyncThunk(
-  'auth/logoutUser',
-  async () => {
-    await AsyncStorage.removeItem('userToken');
-    delete axios.defaults.headers.common['Authorization'];
-    return null;
-  }
-);
+export const logoutUser = createAsyncThunk('auth/logoutUser', async () => {
+  await AsyncStorage.removeItem('userToken');
+  delete axios.defaults.headers.common['Authorization'];
+  return null;
+});
 
 export const updateMyProfile = createAsyncThunk<
   UpdateProfileResult,
@@ -145,11 +145,15 @@ export const updateMyProfile = createAsyncThunk<
           message: response?.data?.message || 'Profile updated successfully',
         };
       }
-      return rejectWithValue(response?.data?.message || 'Profile update failed');
+      return rejectWithValue(
+        response?.data?.message || 'Profile update failed',
+      );
     } catch (error: any) {
-      return rejectWithValue(error?.response?.data?.message || 'Profile update failed');
+      return rejectWithValue(
+        error?.response?.data?.message || 'Profile update failed',
+      );
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
@@ -161,14 +165,14 @@ const authSlice = createSlice({
     error: null,
   } as AuthState,
   reducers: {
-    clearError: (state) => {
+    clearError: state => {
       state.error = null;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     builder
       // Check stored token lifecycle
-      .addCase(checkStoredToken.pending, (state) => {
+      .addCase(checkStoredToken.pending, state => {
         state.loading = true;
         state.error = null;
       })
@@ -184,7 +188,7 @@ const authSlice = createSlice({
         state.error = (action.payload as string) || 'Session expired';
       })
       // Login lifecycle
-      .addCase(loginUser.pending, (state) => {
+      .addCase(loginUser.pending, state => {
         state.loading = true;
         state.error = null;
       })
@@ -198,12 +202,12 @@ const authSlice = createSlice({
         state.error = (action.payload as string) || 'Login failed';
       })
       // Logout lifecycle
-      .addCase(logoutUser.fulfilled, (state) => {
+      .addCase(logoutUser.fulfilled, state => {
         state.token = null;
         state.user = null;
         state.error = null;
       })
-      .addCase(updateMyProfile.pending, (state) => {
+      .addCase(updateMyProfile.pending, state => {
         state.loading = true;
         state.error = null;
       })

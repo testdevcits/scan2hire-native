@@ -1,11 +1,14 @@
- 
-
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  InternalAxiosRequestConfig,
+  AxiosResponse,
+} from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '../config/apiConfig';
 
 // 1. Configuration
- 
+
 const axiosClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 15000,
@@ -47,10 +50,10 @@ axiosClient.interceptors.request.use(
 
     return config;
   },
-  (error) => {
+  error => {
     console.error('❌ Request Error:', error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // 3. Response Interceptor: Global Success & Error Handling
@@ -58,17 +61,16 @@ axiosClient.interceptors.response.use(
   (response: AxiosResponse) => {
     // Log success
 
-
     // console.log("===============response============",response)
-    console.log(`✅ [${response.status}] Response from: ${response.config.url}`);
-    
+    console.log(
+      `✅ [${response.status}] Response from: ${response.config.url}`,
+    );
+
     // Return only the data portion to your services
     return response.data;
   },
   async (error: AxiosError) => {
-
-console.log("=========error====",error.response)
-
+    console.log('=========error====', error.response);
 
     const status = error.response?.status;
     const url = error.config?.url;
@@ -92,7 +94,7 @@ console.log("=========error====",error.response)
 
     // Parse and return a clean error object
     return Promise.reject(parseApiError(error));
-  }
+  },
 );
 
 /**
@@ -100,12 +102,12 @@ console.log("=========error====",error.response)
  */
 const parseApiError = (error: AxiosError<any>) => {
   const data = error.response?.data;
-  
+
   // Custom logic based on how your backend sends errors
-  const message = 
-    data?.message || 
-    data?.error || 
-    data?.msg || 
+  const message =
+    data?.message ||
+    data?.error ||
+    data?.msg ||
     'Something went wrong. Please try again.';
 
   return {

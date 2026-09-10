@@ -1,8 +1,7 @@
 // src/services/apiService.ts
 
-import axiosClient from "../axiosClient";
+import axiosClient from '../axiosClient';
 
- 
 // Input Interfaces
 export interface LocationCoords {
   latitude: number;
@@ -71,7 +70,7 @@ export const attendanceService = {
    */
   startAttendance: async (
     selfieBase64: string,
-    location: LocationCoords
+    location: LocationCoords,
   ): Promise<ApiResponse<AttendanceRecord>> => {
     const payload = {
       selfie: {
@@ -87,7 +86,7 @@ export const attendanceService = {
     // axiosClient returns response.data directly due to its response interceptor
     const response = await axiosClient.post<ApiResponse<AttendanceRecord>>(
       '/users/attendance/start',
-      payload
+      payload,
     );
     return ensureSuccess(response as unknown as ApiResponse<AttendanceRecord>);
   },
@@ -98,7 +97,7 @@ export const attendanceService = {
   endAttendance: async (): Promise<ApiResponse<AttendanceRecord>> => {
     const response = await axiosClient.post<ApiResponse<AttendanceRecord>>(
       '/users/attendance/end',
-      {}
+      {},
     );
     return ensureSuccess(response as unknown as ApiResponse<AttendanceRecord>);
   },
@@ -108,20 +107,29 @@ export const attendanceService = {
    */
   getAttendanceHistory: async (): Promise<ApiResponse<AttendanceRecord[]>> => {
     const response = await axiosClient.get<ApiResponse<AttendanceRecord[]>>(
-      '/users/attendance'
+      '/users/attendance',
     );
-    return ensureSuccess(response as unknown as ApiResponse<AttendanceRecord[]>);
+    return ensureSuccess(
+      response as unknown as ApiResponse<AttendanceRecord[]>,
+    );
   },
 
   syncLocation: async (
-    location: LocationCoords
-  ): Promise<ApiResponse<{
-    action: 'paused' | 'resumed' | 'already_paused' | 'updated' | 'remote_allowed';
-    withinRadius: boolean;
-    distanceFromOfficeMeters: number | null;
-    allowedRadiusMeters: number | null;
-    attendance: AttendanceRecord;
-  }>> => {
+    location: LocationCoords,
+  ): Promise<
+    ApiResponse<{
+      action:
+        | 'paused'
+        | 'resumed'
+        | 'already_paused'
+        | 'updated'
+        | 'remote_allowed';
+      withinRadius: boolean;
+      distanceFromOfficeMeters: number | null;
+      allowedRadiusMeters: number | null;
+      attendance: AttendanceRecord;
+    }>
+  > => {
     const response = await axiosClient.post<ApiResponse<any>>(
       '/users/attendance/location',
       {
@@ -130,15 +138,22 @@ export const attendanceService = {
           longitude: location?.longitude,
           accuracy: location?.accuracy ? Math.round(location?.accuracy) : 15,
         },
-      }
+      },
     );
-    return ensureSuccess(response as unknown as ApiResponse<{
-      action: 'paused' | 'resumed' | 'already_paused' | 'updated' | 'remote_allowed';
-      withinRadius: boolean;
-      distanceFromOfficeMeters: number | null;
-      allowedRadiusMeters: number | null;
-      attendance: AttendanceRecord;
-    }>);
+    return ensureSuccess(
+      response as unknown as ApiResponse<{
+        action:
+          | 'paused'
+          | 'resumed'
+          | 'already_paused'
+          | 'updated'
+          | 'remote_allowed';
+        withinRadius: boolean;
+        distanceFromOfficeMeters: number | null;
+        allowedRadiusMeters: number | null;
+        attendance: AttendanceRecord;
+      }>,
+    );
   },
 
   /**
@@ -146,14 +161,14 @@ export const attendanceService = {
    * @param breakType - Action classification
    */
   startBreak: async (
-    breakType: BreakType = 'lunch'
+    breakType: BreakType = 'lunch',
   ): Promise<ApiResponse<any>> => {
     const payload = {
       type: breakType,
     };
     const response = await axiosClient.post<ApiResponse<any>>(
       '/users/attendance/break/start',
-      payload
+      payload,
     );
     return ensureSuccess(response as unknown as ApiResponse<any>);
   },
@@ -164,42 +179,42 @@ export const attendanceService = {
   endBreak: async (): Promise<ApiResponse<any>> => {
     const response = await axiosClient.post<ApiResponse<any>>(
       '/users/attendance/break/end',
-      {}
+      {},
     );
     return ensureSuccess(response as unknown as ApiResponse<any>);
   },
 };
 
 export const authService = {
-
   requestPasswordOtp: async (
-    email: string
+    email: string,
   ): Promise<ApiResponse<null | Record<string, never>>> => {
     const response = await axiosClient.post<ApiResponse<null>>(
       '/employees/forgot-password',
-      { email }
+      { email },
     );
     return ensureSuccess(response as unknown as ApiResponse<null>);
   },
 
   verifyOtp: async (
     email: string,
-    otp: string
+    otp: string,
   ): Promise<ApiResponse<null | Record<string, never>>> => {
     const response = await axiosClient.post<ApiResponse<null>>(
       '/employees/forgot-password/verify-otp',
-      { email, otp }
+      { email, otp },
     );
     return ensureSuccess(response as unknown as ApiResponse<null>);
   },
- 
 
-  resetPassword: async (
-    payload: { email: string; resetToken: string; password: string }
-  ): Promise<ApiResponse<null | Record<string, never>>> => {
+  resetPassword: async (payload: {
+    email: string;
+    resetToken: string;
+    password: string;
+  }): Promise<ApiResponse<null | Record<string, never>>> => {
     const response = await axiosClient.post<ApiResponse<null>>(
       '/employees/forgot-password/reset',
-      payload
+      payload,
     );
     return ensureSuccess(response as unknown as ApiResponse<null>);
   },

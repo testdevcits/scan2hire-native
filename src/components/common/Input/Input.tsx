@@ -1,5 +1,3 @@
- 
-
 import React, { memo, useState } from 'react';
 import {
   TextInput,
@@ -7,10 +5,9 @@ import {
   TextInputProps,
   TouchableOpacity,
 } from 'react-native';
- import styles from './Input.styles';
+import styles from './Input.styles';
 import { COLORS } from '../../../constants';
 import AppText from '../AppText';
- 
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -47,13 +44,11 @@ const Input = ({
           focused && styles.focusedBorder,
           error && styles.errorBorder,
           disabled && styles.disabledBorder,
-        ]}>
-        
+        ]}
+      >
         {/* Left Icon Render Block */}
         {leftIcon ? (
-          <View style={styles.leftIconContainer}>
-            {leftIcon}
-          </View>
+          <View style={styles.leftIconContainer}>{leftIcon}</View>
         ) : null}
 
         <TextInput
@@ -73,13 +68,12 @@ const Input = ({
               setSecureText(!secureText);
               onRightIconPress?.();
             }}
-            hitSlop={10}>
+            hitSlop={10}
+          >
             {rightIcon}
           </TouchableOpacity>
         ) : rightIcon ? (
-          <TouchableOpacity
-            onPress={onRightIconPress}
-            hitSlop={10}>
+          <TouchableOpacity onPress={onRightIconPress} hitSlop={10}>
             {rightIcon}
           </TouchableOpacity>
         ) : null}

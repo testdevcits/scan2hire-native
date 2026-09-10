@@ -15,7 +15,7 @@ import Animated, {
   FadeInDown,
   useSharedValue,
   withSequence,
-  withTiming
+  withTiming,
 } from 'react-native-reanimated';
 
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
@@ -43,7 +43,7 @@ export default function VerifyOTPScreen({ navigation, route }: any) {
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
     if (timer > 0) {
-      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+      interval = setInterval(() => setTimer(prev => prev - 1), 1000);
     }
     return () => clearInterval(interval);
   }, [timer]);
@@ -57,10 +57,13 @@ export default function VerifyOTPScreen({ navigation, route }: any) {
       // Calling the new verifyOtp API
       const response = await authService.verifyOtp(email, finalCode);
 
-      console.log("====response=", response)
+      console.log('====response=', response);
 
       // If successful, navigate to ResetPassword
-      navigation.navigate('ResetPassword', { email, resetToken: response?.data?.resetToken });
+      navigation.navigate('ResetPassword', {
+        email,
+        resetToken: response?.data?.resetToken,
+      });
     } catch (err: any) {
       setError(err.message || 'Incorrect verification code');
       // Shake animation logic here...
@@ -85,7 +88,10 @@ export default function VerifyOTPScreen({ navigation, route }: any) {
       setTimer(TIMER_INITIAL);
       setError(null);
       setOtp('');
-      Alert.alert('Code Resent', 'A new verification code has been sent to your email.');
+      Alert.alert(
+        'Code Resent',
+        'A new verification code has been sent to your email.',
+      );
     } catch (err: any) {
       Alert.alert('Error', 'Failed to resend code. Please try again.');
     } finally {
@@ -113,14 +119,20 @@ export default function VerifyOTPScreen({ navigation, route }: any) {
           </TouchableOpacity>
 
           {/* Illustration Section */}
-          <Animated.View entering={FadeInUp.delay(200)} style={styles.iconContainer}>
+          <Animated.View
+            entering={FadeInUp.delay(200)}
+            style={styles.iconContainer}
+          >
             <View style={styles.iconCircle}>
               <ShieldCheck size={40} color={COLORS.primary} strokeWidth={1.5} />
             </View>
           </Animated.View>
 
           {/* Text Section */}
-          <Animated.View entering={FadeInUp.delay(300)} style={styles.textSection}>
+          <Animated.View
+            entering={FadeInUp.delay(300)}
+            style={styles.textSection}
+          >
             <AppText style={styles.title}>Verify Your Email</AppText>
             <AppText style={styles.subtitle}>
               Enter the 6-digit verification code sent to{' '}
@@ -129,7 +141,10 @@ export default function VerifyOTPScreen({ navigation, route }: any) {
           </Animated.View>
 
           {/* OTP Input Section */}
-          <Animated.View entering={FadeInUp.delay(400)} style={styles.otpSection}>
+          <Animated.View
+            entering={FadeInUp.delay(400)}
+            style={styles.otpSection}
+          >
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => inputRef.current?.focus()}
@@ -142,7 +157,7 @@ export default function VerifyOTPScreen({ navigation, route }: any) {
                     styles.otpBox,
                     otp.length === i && styles.otpBoxActive,
                     otp[i] !== undefined && styles.otpBoxFilled,
-                    error && styles.otpBoxError
+                    error && styles.otpBoxError,
                   ]}
                 >
                   <AppText style={styles.otpText}>{otp[i] || ''}</AppText>
@@ -171,8 +186,13 @@ export default function VerifyOTPScreen({ navigation, route }: any) {
           )}
 
           {/* Timer Section */}
-          <Animated.View entering={FadeInUp.delay(500)} style={styles.resendContainer}>
-            <AppText style={styles.resendLabel}>Didn't receive the code?</AppText>
+          <Animated.View
+            entering={FadeInUp.delay(500)}
+            style={styles.resendContainer}
+          >
+            <AppText style={styles.resendLabel}>
+              Didn't receive the code?
+            </AppText>
             {timer > 0 ? (
               <AppText style={styles.timerText}>
                 Resend in 00:{timer < 10 ? `0${timer}` : timer}

@@ -1,4 +1,3 @@
- 
 // import React, { useState } from 'react';
 // import {
 //   StyleSheet,
@@ -166,7 +165,6 @@
 //               buttonStyle={styles.loginButton}
 //             />
 
-
 //           </View>
 
 //           <View style={styles.footer}>
@@ -253,7 +251,6 @@
 //   },
 // });
 
-
 import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
@@ -285,12 +282,16 @@ import { requestAppPermissions } from '../../utils/permissionUtils';
 
 export default function LoginScreen({ navigation }: any) {
   const dispatch = useDispatch<any>();
-  const { loading, error: serverError } = useSelector((state: any) => state.auth);
+  const { loading, error: serverError } = useSelector(
+    (state: any) => state.auth,
+  );
 
   // Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   // Animation Shared Value for Shake Effect
@@ -302,7 +303,7 @@ export default function LoginScreen({ navigation }: any) {
       withTiming(10, { duration: 50 }),
       withTiming(-10, { duration: 50 }),
       withTiming(10, { duration: 50 }),
-      withTiming(0, { duration: 50 })
+      withTiming(0, { duration: 50 }),
     );
   }, [shakeOffset]);
 
@@ -336,7 +337,9 @@ export default function LoginScreen({ navigation }: any) {
       return;
     }
 
-    const resultAction = await dispatch(loginUser({ email: email.trim(), password }));
+    const resultAction = await dispatch(
+      loginUser({ email: email.trim(), password: password.trim() }),
+    );
 
     if (loginUser.fulfilled.match(resultAction)) {
       await requestAppPermissions();
@@ -357,9 +360,12 @@ export default function LoginScreen({ navigation }: any) {
           showsVerticalScrollIndicator={false}
         >
           {/* Header Section */}
-          <Animated.View entering={FadeInUp.delay(200).duration(600)} style={styles.header}>
+          <Animated.View
+            entering={FadeInUp.delay(200).duration(600)}
+            style={styles.header}
+          >
             <Image
-              source={require("../../assets/images/logo.png")}
+              source={require('../../assets/images/logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -385,35 +391,52 @@ export default function LoginScreen({ navigation }: any) {
             {/* Email Input */}
             <View style={styles.inputWrapper}>
               <AppText style={styles.label}>Email Address</AppText>
-              <View style={[styles.inputBox, errors.email && styles.inputBoxError]}>
+              <View
+                style={[styles.inputBox, errors.email && styles.inputBoxError]}
+              >
                 <Mail size={20} color={COLORS.grey400} />
                 <TextInput
                   style={styles.textInput}
                   placeholder="employee@example.com"
                   placeholderTextColor={COLORS.grey400}
                   value={email}
-                  onChangeText={(t) => { setEmail(t); setErrors({ ...errors, email: '' }); }}
+                  onChangeText={t => {
+                    setEmail(t);
+                    setErrors({ ...errors, email: '' });
+                  }}
                   autoCapitalize="none"
                   keyboardType="email-address"
                 />
               </View>
-              {errors.email && <AppText style={styles.errorText}>{errors.email}</AppText>}
+              {errors.email && (
+                <AppText style={styles.errorText}>{errors.email}</AppText>
+              )}
             </View>
 
             {/* Password Input */}
             <View style={styles.inputWrapper}>
               <AppText style={styles.label}>Password</AppText>
-              <View style={[styles.inputBox, errors.password && styles.inputBoxError]}>
+              <View
+                style={[
+                  styles.inputBox,
+                  errors.password && styles.inputBoxError,
+                ]}
+              >
                 <Lock size={20} color={COLORS.grey400} />
                 <TextInput
                   style={styles.textInput}
                   placeholder="••••••••"
                   placeholderTextColor={COLORS.grey400}
                   value={password}
-                  onChangeText={(t) => { setPassword(t); setErrors({ ...errors, password: '' }); }}
+                  onChangeText={t => {
+                    setPassword(t);
+                    setErrors({ ...errors, password: '' });
+                  }}
                   secureTextEntry={!isPasswordVisible}
                 />
-                <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+                <TouchableOpacity
+                  onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                >
                   {isPasswordVisible ? (
                     <EyeOff size={20} color={COLORS.grey400} />
                   ) : (
@@ -421,7 +444,9 @@ export default function LoginScreen({ navigation }: any) {
                   )}
                 </TouchableOpacity>
               </View>
-              {errors.password && <AppText style={styles.errorText}>{errors.password}</AppText>}
+              {errors.password && (
+                <AppText style={styles.errorText}>{errors.password}</AppText>
+              )}
             </View>
 
             <TouchableOpacity
@@ -442,7 +467,9 @@ export default function LoginScreen({ navigation }: any) {
 
           {/* Footer Section */}
           <View style={styles.footer}>
-            <AppText style={styles.footerText}>Conative Attendance System</AppText>
+            <AppText style={styles.footerText}>
+              Conative Attendance System
+            </AppText>
             <AppText style={styles.versionText}>
               © {new Date().getFullYear()} • Version 1.0.0
             </AppText>

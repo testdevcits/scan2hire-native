@@ -1,9 +1,14 @@
 // src/hooks/useActiveLocationTracker.ts
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState, AppStateStatus, Platform, PermissionsAndroid } from 'react-native';
+import {
+  AppState,
+  AppStateStatus,
+  Platform,
+  PermissionsAndroid,
+} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-  
+
 export const useActiveLocationTracker = () => {
   const appState = useRef(AppState.currentState);
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
@@ -19,7 +24,7 @@ export const useActiveLocationTracker = () => {
     if (Platform.OS === 'android') {
       try {
         const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         );
         return granted === PermissionsAndroid.RESULTS.GRANTED;
       } catch (err) {
@@ -41,20 +46,26 @@ export const useActiveLocationTracker = () => {
       if (!token) return;
 
       Geolocation.getCurrentPosition(
-        async (position) => {
+        async position => {
           const { latitude, longitude } = position.coords;
 
           try {
-            console.log('📡 [3s Interval] Coordinates Broadcasted successfully:', { latitude, longitude });
+            console.log(
+              '📡 [3s Interval] Coordinates Broadcasted successfully:',
+              { latitude, longitude },
+            );
           } catch (apiError) {
             console.warn('📡 [3s Interval] API update failed:', apiError);
           }
         },
-        (error) => {
-          console.warn('📡 [3s Interval] GPS hardware locked out:', error.message);
+        error => {
+          console.warn(
+            '📡 [3s Interval] GPS hardware locked out:',
+            error.message,
+          );
         },
         // Low timeout/cache age parameters optimized for rapid 3-second polls
-        { enableHighAccuracy: true, timeout: 4500, maximumAge: 1000 }
+        { enableHighAccuracy: true, timeout: 4500, maximumAge: 1000 },
       );
     } catch (err) {
       console.warn('Location Tracker runtime execution error:', err);
@@ -63,10 +74,13 @@ export const useActiveLocationTracker = () => {
 
   // Listen to Active vs Background App States
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
-      appState.current = nextAppState;
-      setAppStateVisible(appState.current);
-    });
+    const subscription = AppState.addEventListener(
+      'change',
+      (nextAppState: AppStateStatus) => {
+        appState.current = nextAppState;
+        setAppStateVisible(appState.current);
+      },
+    );
 
     return () => {
       subscription.remove();
@@ -76,8 +90,10 @@ export const useActiveLocationTracker = () => {
   // Control 3-second background polling lifecycle based on active state [1]
   useEffect(() => {
     if (appStateVisible === 'active') {
-      console.log('⚡ App is active. Starting location interval tracker (3000ms)...');
-      
+      console.log(
+        '⚡ App is active. Starting location interval tracker (3000ms)...',
+      );
+
       // Execute once immediately when app is opened
       syncLocationWithBackend();
 
@@ -100,5 +116,3 @@ export const useActiveLocationTracker = () => {
     };
   }, [appStateVisible, syncLocationWithBackend]);
 };
-
- 

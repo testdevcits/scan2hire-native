@@ -5,13 +5,7 @@ import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react-native';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants';
 import AppText from './AppText';
 
-const CustomToast = ({ 
-  text1, 
-  text2, 
-  type, 
-  icon: Icon, 
-  color 
-}: any) => (
+const CustomToast = ({ text1, text2, type, icon: Icon, color }: any) => (
   <View style={[styles.container, { borderLeftColor: color }]}>
     <View style={[styles.iconContainer, { backgroundColor: `${color}10` }]}>
       <Icon size={20} color={color} strokeWidth={2.5} />
@@ -24,26 +18,14 @@ const CustomToast = ({
 );
 
 export const toastConfig: ToastConfig = {
-  success: (props) => (
-    <CustomToast 
-      {...props} 
-      icon={CheckCircle2} 
-      color={COLORS.success} 
-    />
+  success: props => (
+    <CustomToast {...props} icon={CheckCircle2} color={COLORS.success} />
   ),
-  error: (props) => (
-    <CustomToast 
-      {...props} 
-      icon={AlertCircle} 
-      color={COLORS.error} 
-    />
+  error: props => (
+    <CustomToast {...props} icon={AlertCircle} color={COLORS.error} />
   ),
-  info: (props) => (
-    <CustomToast 
-      {...props} 
-      icon={Info} 
-      color={COLORS.secondaryDark} 
-    />
+  info: props => (
+    <CustomToast {...props} icon={Info} color={COLORS.secondaryDark} />
   ),
 };
 

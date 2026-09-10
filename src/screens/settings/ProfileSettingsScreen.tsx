@@ -200,6 +200,7 @@ const ProfileSettingsScreen = () => {
               placeholder="Enter your name"
               placeholderTextColor={COLORS.textLight}
               style={styles.input}
+              editable={false}
             />
 
             <Text style={styles.label}>Mobile</Text>
@@ -210,6 +211,7 @@ const ProfileSettingsScreen = () => {
               placeholderTextColor={COLORS.textLight}
               keyboardType="phone-pad"
               style={styles.input}
+                editable={false}
             />
 
             <Text style={styles.readOnlyLabel}>Email</Text>

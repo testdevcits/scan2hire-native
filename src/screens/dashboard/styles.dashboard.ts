@@ -1,7 +1,6 @@
-import { StyleSheet } from "react-native";
-import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from "../../constants";
+import { StyleSheet } from 'react-native';
+import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 
-     
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
@@ -36,7 +35,7 @@ const styles = StyleSheet.create({
     color: COLORS.grey700,
     lineHeight: 18,
   },
-   
+
   controlCard: {
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.md,
@@ -208,8 +207,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     color: COLORS.white,
   },
-  
-  
+
   logoutBtn: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -227,4 +225,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default styles
+export default styles;

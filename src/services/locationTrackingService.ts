@@ -6,13 +6,15 @@ import { LocationCoords } from '../api/services/apiService';
 
 const backgroundServiceModule = require('react-native-background-actions');
 const backgroundFetchModule = require('react-native-background-fetch');
-const BackgroundService = backgroundServiceModule.default || backgroundServiceModule;
+const BackgroundService =
+  backgroundServiceModule.default || backgroundServiceModule;
 const BackgroundFetch = backgroundFetchModule.default || backgroundFetchModule;
 
 const TRACKING_ACTIVE_KEY = 'attendanceLocationTrackingActive';
 const SYNC_INTERVAL_MS = 10000;
 
-const sleep = (time: number) => new Promise<void>((resolve) => setTimeout(resolve, time));
+const sleep = (time: number) =>
+  new Promise<void>(resolve => setTimeout(resolve, time));
 
 export const checkLocationPermissions = async (): Promise<boolean> => {
   if (Platform.OS === 'ios') {
@@ -21,10 +23,10 @@ export const checkLocationPermissions = async (): Promise<boolean> => {
 
   if (Platform.OS === 'android') {
     const fineGranted = await PermissionsAndroid.check(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
     );
     const coarseGranted = await PermissionsAndroid.check(
-      PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION
+      PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
     );
     return fineGranted || coarseGranted;
   }
@@ -39,30 +41,30 @@ const requestLocationPermissions = async (): Promise<boolean> => {
   }
 
   const fineGranted = await PermissionsAndroid.check(
-    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
   );
   const coarseGranted = await PermissionsAndroid.check(
-    PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION
+    PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
   );
 
   if (fineGranted || coarseGranted) {
     if (Number(Platform.Version) >= 29) {
       const bgGranted = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION
+        PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
       );
       if (!bgGranted) {
         await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION
+          PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
         );
       }
     }
     if (Number(Platform.Version) >= 33) {
       const notifGranted = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
       );
       if (!notifGranted) {
         await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         );
       }
     }
@@ -84,15 +86,19 @@ const requestLocationPermissions = async (): Promise<boolean> => {
 
   if (Number(Platform.Version) >= 29) {
     const background = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION
+      PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
     );
     if (background !== PermissionsAndroid.RESULTS.GRANTED) {
-      console.warn('[attendance:location:bg] Background location permission not granted.');
+      console.warn(
+        '[attendance:location:bg] Background location permission not granted.',
+      );
     }
   }
 
   if (Number(Platform.Version) >= 33) {
-    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+    await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+    );
   }
 
   return true;
@@ -101,7 +107,7 @@ const requestLocationPermissions = async (): Promise<boolean> => {
 export const readDeviceLocation = (): Promise<LocationCoords> =>
   new Promise((resolve, reject) => {
     Geolocation.getCurrentPosition(
-      (position) => {
+      position => {
         resolve({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
@@ -119,20 +125,26 @@ export const readDeviceLocation = (): Promise<LocationCoords> =>
           android: 'high',
           ios: 'best',
         },
-      }
+      },
     );
   });
 
 export const syncAttendanceLocationOnce = async (source = 'foreground') => {
   const token = await AsyncStorage.getItem('userToken');
   if (!token) {
-    console.log('[attendance:location:native] Skip sync: no auth token', { source });
+    console.log('[attendance:location:native] Skip sync: no auth token', {
+      source,
+    });
     return null;
   }
 
-  const hasPermission = (await checkLocationPermissions()) || (await requestLocationPermissions());
+  const hasPermission =
+    (await checkLocationPermissions()) || (await requestLocationPermissions());
   if (!hasPermission) {
-    console.warn('[attendance:location:native] Skip sync: location permission denied', { source });
+    console.warn(
+      '[attendance:location:native] Skip sync: location permission denied',
+      { source },
+    );
     return null;
   }
 
@@ -171,7 +183,10 @@ const backgroundLocationTask = async () => {
     try {
       await syncAttendanceLocationOnce('background-service');
     } catch (error: any) {
-      console.warn('[attendance:location:bg] Sync failed:', error?.message || error);
+      console.warn(
+        '[attendance:location:bg] Sync failed:',
+        error?.message || error,
+      );
     }
 
     await sleep(SYNC_INTERVAL_MS);
@@ -208,7 +223,7 @@ const backgroundOptions = {
 
 export const startAttendanceLocationTracking = async () => {
   // Check permission FIRST before starting the service
-  const hasPermission = await requestLocationPermissions(); 
+  const hasPermission = await requestLocationPermissions();
   if (!hasPermission) {
     console.log('[bg] Cannot start: Permission missing');
     return;
@@ -231,7 +246,9 @@ export const stopAttendanceLocationTracking = async () => {
 
 export const initAttendanceBackgroundFetch = async () => {
   if (typeof BackgroundFetch.configure !== 'function') {
-    console.warn('[attendance:location:fetch] BackgroundFetch.configure is not available.');
+    console.warn(
+      '[attendance:location:fetch] BackgroundFetch.configure is not available.',
+    );
     return;
   }
 
@@ -252,14 +269,17 @@ export const initAttendanceBackgroundFetch = async () => {
           await sleep(SYNC_INTERVAL_MS); // 10 seconds
         }
       } catch (error: any) {
-        console.warn('[attendance:location:fetch] Sync failed:', error?.message || error);
+        console.warn(
+          '[attendance:location:fetch] Sync failed:',
+          error?.message || error,
+        );
       } finally {
         BackgroundFetch.finish(taskId);
       }
     },
     async (taskId: string) => {
       BackgroundFetch.finish(taskId);
-    }
+    },
   );
   console.log('[attendance:location:fetch] Background fetch configured.');
 };
@@ -273,7 +293,10 @@ export const attendanceBackgroundFetchHeadlessTask = async (event: any) => {
       await syncAttendanceLocationOnce('background-fetch-headless');
     }
   } catch (error: any) {
-    console.warn('[attendance:location:headless] Sync failed:', error?.message || error);
+    console.warn(
+      '[attendance:location:headless] Sync failed:',
+      error?.message || error,
+    );
   } finally {
     if (taskId) {
       BackgroundFetch.finish(taskId);
@@ -283,7 +306,9 @@ export const attendanceBackgroundFetchHeadlessTask = async (event: any) => {
 
 export const registerAttendanceLocationHeadlessTask = (): boolean => {
   if (typeof BackgroundFetch.registerHeadlessTask !== 'function') {
-    console.warn('[attendance:location:headless] BackgroundFetch.registerHeadlessTask is not available.');
+    console.warn(
+      '[attendance:location:headless] BackgroundFetch.registerHeadlessTask is not available.',
+    );
     return false;
   }
 

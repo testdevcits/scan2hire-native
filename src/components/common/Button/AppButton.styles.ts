@@ -2,8 +2,6 @@
 import { StyleSheet } from 'react-native';
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../../constants';
 
- 
-
 export default StyleSheet.create({
   button: {
     // height: 52,

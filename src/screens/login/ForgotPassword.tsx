@@ -108,7 +108,6 @@
 //           keyboardShouldPersistTaps="handled"
 //           showsVerticalScrollIndicator={false}>
 
-
 //           <View style={styles.headerContainer}>
 //             <View style={styles.brandIconContainer}>
 //               <KeyRound size={32} color={COLORS.primary} />
@@ -297,9 +296,14 @@
 //   },
 // });
 
-
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from 'react-native';
 import { ArrowLeft, Mail, KeyRound } from 'lucide-react-native';
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import AppButton from '../../components/common/Button/AppButton';
@@ -333,7 +337,10 @@ export default function ForgotPasswordScreen({ navigation }: any) {
 
   return (
     <View style={styles.safeContainer}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}
+      >
         <ArrowLeft size={20} color={COLORS.textPrimary} />
         <AppText style={styles.backText}>Back</AppText>
       </TouchableOpacity>
@@ -344,14 +351,19 @@ export default function ForgotPasswordScreen({ navigation }: any) {
             <KeyRound size={32} color={COLORS.primary} />
           </View>
           <AppText style={styles.title}>Forgot Password</AppText>
-          <AppText style={styles.subtitle}>Enter your email to receive a 6-digit verification code.</AppText>
+          <AppText style={styles.subtitle}>
+            Enter your email to receive a 6-digit verification code.
+          </AppText>
         </View>
 
         <Input
           label="Email Address"
           placeholder="e.g. name@example.com"
           value={email}
-          onChangeText={(t) => { setEmail(t); setError(''); }}
+          onChangeText={t => {
+            setEmail(t);
+            setError('');
+          }}
           keyboardType="email-address"
           autoCapitalize="none"
           error={error}
@@ -369,7 +381,6 @@ export default function ForgotPasswordScreen({ navigation }: any) {
   );
 }
 
-
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
@@ -383,7 +394,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: SPACING.xxl,
     paddingVertical: SPACING.xl,
-    paddingBottom: SPACING.xxxl
+    paddingBottom: SPACING.xxxl,
   },
   backButton: {
     alignItems: 'center',

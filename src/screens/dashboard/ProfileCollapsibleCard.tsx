@@ -108,28 +108,37 @@
 //         fontSize: FONT_SIZE.sm,
 //         color: COLORS.textPrimary,
 //       },
-    
+
 // });
 
-
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
-import { 
-  User, 
-  ChevronDown, 
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+} from 'react-native';
+import {
+  User,
+  ChevronDown,
   ChevronUp,
-  IdCard, 
-  Building2, 
-  Briefcase, 
-  CalendarDays, 
-  Users2, 
-  Fingerprint 
+  IdCard,
+  Building2,
+  Briefcase,
+  CalendarDays,
+  Users2,
+  Fingerprint,
 } from 'lucide-react-native';
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import AppText from '../../components/common/AppText';
 
 // Enable LayoutAnimation for Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -139,24 +148,34 @@ interface ProfileCollapsibleCardProps {
   isProfileCollapsed: boolean;
 }
 
-const ProfileCollapsibleCard: React.FC<ProfileCollapsibleCardProps> = ({ 
-  user, 
-  setIsProfileCollapsed, 
-  isProfileCollapsed 
+const ProfileCollapsibleCard: React.FC<ProfileCollapsibleCardProps> = ({
+  user,
+  setIsProfileCollapsed,
+  isProfileCollapsed,
 }) => {
   const toggleCollapse = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsProfileCollapsed(!isProfileCollapsed);
   };
 
-  const ProfileItem = ({ icon: Icon, label, value }: { icon: any, label: string, value: string }) => (
+  const ProfileItem = ({
+    icon: Icon,
+    label,
+    value,
+  }: {
+    icon: any;
+    label: string;
+    value: string;
+  }) => (
     <View style={styles.gridItem}>
       <View style={styles.iconContainer}>
         <Icon size={14} color={COLORS.primary} strokeWidth={2.5} />
       </View>
       <View style={styles.textContainer}>
         <AppText style={styles.fieldLabel}>{label}</AppText>
-        <AppText style={styles.fieldValue} numberOfLines={1}>{value || 'N/A'}</AppText>
+        <AppText style={styles.fieldValue} numberOfLines={1}>
+          {value || 'Not Available'}
+        </AppText>
       </View>
     </View>
   );
@@ -174,10 +193,12 @@ const ProfileCollapsibleCard: React.FC<ProfileCollapsibleCardProps> = ({
           </View>
           <View>
             <AppText style={styles.headerTitle}>Professional Profile</AppText>
-            <AppText style={styles.headerSubtitle}>Employment & Department details</AppText>
+            <AppText style={styles.headerSubtitle}>
+              Employment & Department details
+            </AppText>
           </View>
         </View>
-        
+
         <View style={styles.chevronCircle}>
           {isProfileCollapsed ? (
             <ChevronDown size={18} color={COLORS.textSecondary} />
@@ -190,41 +211,53 @@ const ProfileCollapsibleCard: React.FC<ProfileCollapsibleCardProps> = ({
       {!isProfileCollapsed && (
         <View style={styles.body}>
           <View style={styles.grid}>
-            <ProfileItem 
-              icon={Fingerprint} 
-              label="Employee ID" 
-              value={user?.employeeProfile?.employeeId} 
+            <ProfileItem
+              icon={Fingerprint}
+              label="Employee ID"
+              value={user?.employeeProfile?.employeeId}
             />
-            <ProfileItem 
-              icon={Building2} 
-              label="Department" 
-              value={user?.employeeProfile?.department} 
+            <ProfileItem
+              icon={Building2}
+              label="Department"
+              value={user?.employeeProfile?.department}
             />
-            <ProfileItem 
-              icon={Briefcase} 
-              label="Designation" 
-              value={user?.employeeProfile?.designation} 
+            <ProfileItem
+              icon={Briefcase}
+              label="Designation"
+              value={user?.employeeProfile?.designation}
             />
-            <ProfileItem 
-              icon={CalendarDays} 
-              label="Joining Date" 
-              value={user?.employeeProfile?.dateOfJoining ? new Date(user?.employeeProfile?.dateOfJoining).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric'}) : ''} 
+            <ProfileItem
+              icon={CalendarDays}
+              label="Joining Date"
+              value={
+                user?.employeeProfile?.dateOfJoining
+                  ? new Date(
+                      user?.employeeProfile?.dateOfJoining,
+                    ).toLocaleDateString('en-GB', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                    })
+                  : ''
+              }
             />
-            <ProfileItem 
-              icon={Users2} 
-              label="Manager" 
-              value={user?.employeeProfile?.reportingManager} 
+            <ProfileItem
+              icon={Users2}
+              label="Manager"
+              value={user?.employeeProfile?.reportingManager}
             />
-            <ProfileItem 
-              icon={IdCard} 
-              label="Emp Type" 
-              value={user?.employeeProfile?.employeeType} 
+            <ProfileItem
+              icon={IdCard}
+              label="Emp Type"
+              value={user?.employeeProfile?.employeeType}
             />
           </View>
-          
+
           {/* Subtle footer hint */}
           <View style={styles.footerHint}>
-            <AppText style={styles.hintText}>Data verified by HR Department</AppText>
+            <AppText style={styles.hintText}>
+              Data verified by HR Department
+            </AppText>
           </View>
         </View>
       )}
@@ -340,7 +373,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: FONTS.italic,
     color: COLORS.textLight,
-  }
+  },
 });
 
 export default ProfileCollapsibleCard;

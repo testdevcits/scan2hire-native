@@ -1,12 +1,12 @@
 import React, { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { 
-  LogIn, 
-  LogOut, 
-  Briefcase, 
-  Coffee, 
+import {
+  LogIn,
+  LogOut,
+  Briefcase,
+  Coffee,
   Calendar,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-react-native';
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import { AttendanceRecord } from '../../api/services/apiService';
@@ -35,10 +35,18 @@ const HistoryCard: React.FC<HistoryCardProps> = ({ item }) => {
   const statusCfg = getStatusConfig(item.status);
 
   const clockIn = item.loginAt
-    ? new Date(item?.loginAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })
+    ? new Date(item?.loginAt).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      })
     : '--:--';
   const clockOut = item.logoutAt
-    ? new Date(item?.logoutAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })
+    ? new Date(item?.logoutAt).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      })
     : '--:--';
 
   const displayDate = new Date(item?.dateKey).toLocaleDateString([], {
@@ -52,7 +60,11 @@ const HistoryCard: React.FC<HistoryCardProps> = ({ item }) => {
       {/* Top Row: Date and Status Badge */}
       <View style={styles.header}>
         <View style={styles.dateSection}>
-          <Calendar size={14} color={COLORS.textSecondary} style={{ marginRight: 6 }} />
+          <Calendar
+            size={14}
+            color={COLORS.textSecondary}
+            style={{ marginRight: 6 }}
+          />
           <AppText style={styles.dateText}>{displayDate}</AppText>
         </View>
         <View style={[styles.badge, { backgroundColor: statusCfg.bg }]}>
@@ -92,16 +104,19 @@ const HistoryCard: React.FC<HistoryCardProps> = ({ item }) => {
       <View style={styles.footer}>
         <View style={styles.footerItem}>
           <Briefcase size={12} color={COLORS.textLight} />
-          <AppText style={styles.footerValue}>{formatMinutes(item.totalWorkMinutes)}</AppText>
+          <AppText style={styles.footerValue}>
+            {formatMinutes(item.totalWorkMinutes)}
+          </AppText>
           <AppText style={styles.footerLabel}>Work</AppText>
         </View>
         <View style={styles.footerItem}>
           <Coffee size={12} color={COLORS.textLight} />
-          <AppText style={styles.footerValue}>{formatMinutes(item.totalBreakMinutes)}</AppText>
+          <AppText style={styles.footerValue}>
+            {formatMinutes(item.totalBreakMinutes)}
+          </AppText>
           <AppText style={styles.footerLabel}>Breaks</AppText>
         </View>
         {/* <ChevronRight size={16} color={COLORS.grey300} /> */}
-
       </View>
     </View>
   );
@@ -196,7 +211,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
     padding: SPACING.sm,
     gap: SPACING.md,
-    justifyContent:"space-between"
+    justifyContent: 'space-between',
   },
   footerItem: {
     flexDirection: 'row',

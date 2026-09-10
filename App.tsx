@@ -14,8 +14,11 @@ import { initAttendanceBackgroundFetch } from './src/services/locationTrackingSe
 
 export default function App() {
   useEffect(() => {
-    initAttendanceBackgroundFetch().catch((error) => {
-      console.warn('[attendance:location:fetch] Init failed:', error?.message || error);
+    initAttendanceBackgroundFetch().catch(error => {
+      console.warn(
+        '[attendance:location:fetch] Init failed:',
+        error?.message || error,
+      );
     });
   }, []);
 
@@ -28,25 +31,24 @@ export default function App() {
         <SafeAreaProvider>
           {/* 4. Context for Bottom Sheet Modals */}
           <BottomSheetModalProvider>
-            
-            <StatusBar barStyle={'light-content'} backgroundColor={COLORS.primary} />
+            <StatusBar
+              barStyle={'light-content'}
+              backgroundColor={COLORS.primary}
+            />
             {/* 
                REMOVED SafeAreaView from here. 
                Handle safe areas inside screens so background colors/images look premium.
             */}
-            <SafeAreaView style={{flex:1}}> 
-
-            
-            <View style={{ flex: 1, backgroundColor: COLORS.background }}>
-              <NavigationContainer>
-                <AppNavigator />
-              </NavigationContainer>
-            </View>
-             </SafeAreaView>
+            <SafeAreaView style={{ flex: 1 }}>
+              <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+                <NavigationContainer>
+                  <AppNavigator />
+                </NavigationContainer>
+              </View>
+            </SafeAreaView>
 
             {/* 5. Toast stays at the very bottom of the JSX tree to stay on top */}
             <Toast config={toastConfig} />
-            
           </BottomSheetModalProvider>
         </SafeAreaProvider>
       </Provider>

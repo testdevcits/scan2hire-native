@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { COLORS ,SPACING,FONTS,FONT_SIZE,RADIUS} from "../../constants";
+import { StyleSheet } from 'react-native';
+import { COLORS, SPACING, FONTS, FONT_SIZE, RADIUS } from '../../constants';
 
 const styles = StyleSheet.create({
   safeContainer: {
@@ -131,4 +131,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default styles
+export default styles;

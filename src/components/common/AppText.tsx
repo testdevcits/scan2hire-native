@@ -1,24 +1,13 @@
 import React from 'react';
-import {
-  Text,
-  TextProps,
-  TextStyle,
-  StyleProp,
-} from 'react-native';
+import { Text, TextProps, TextStyle, StyleProp } from 'react-native';
 import { COLORS, FONTS } from '../../constants';
- 
- 
 
 interface AppTextProps extends TextProps {
   children: React.ReactNode;
   style?: StyleProp<TextStyle>;
 }
 
-const AppText: React.FC<AppTextProps> = ({
-  children,
-  style,
-  ...rest
-}) => {
+const AppText: React.FC<AppTextProps> = ({ children, style, ...rest }) => {
   return (
     <Text
       allowFontScaling={false}
@@ -29,7 +18,8 @@ const AppText: React.FC<AppTextProps> = ({
         },
         style,
       ]}
-      {...rest}>
+      {...rest}
+    >
       {children}
     </Text>
   );

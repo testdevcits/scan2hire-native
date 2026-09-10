@@ -7,9 +7,8 @@ import Geolocation from 'react-native-geolocation-service';
  * if permanently blocked by the driver.
  */
 export const requestLocationPermission = async (
-  onShowSettingsPrompt: (title: string, message: string) => void
+  onShowSettingsPrompt: (title: string, message: string) => void,
 ): Promise<boolean> => {
-  
   // --- iOS Handling ---
   if (Platform.OS === 'ios') {
     try {
@@ -17,12 +16,12 @@ export const requestLocationPermission = async (
       if (status === 'granted') {
         return true;
       }
-      
+
       // If blocked, prompt settings redirect
       if (status === 'denied' || status === 'restricted') {
         onShowSettingsPrompt(
           'Location Services Required',
-          'GPS access is restricted. Please open system settings and enable Location permissions manually to sync active route coordinates.'
+          'GPS access is restricted. Please open system settings and enable Location permissions manually to sync active route coordinates.',
         );
       }
       return false;
@@ -37,7 +36,7 @@ export const requestLocationPermission = async (
     try {
       // 1. Check if permission was already granted previously
       const hasPermission = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       );
       if (hasPermission) return true;
 
@@ -46,11 +45,12 @@ export const requestLocationPermission = async (
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         {
           title: 'Dispatch Location Sync',
-          message: 'FleetRun needs access to your GPS coordinates to coordinate active shipment progress and arrival times.',
+          message:
+            'FleetRun needs access to your GPS coordinates to coordinate active shipment progress and arrival times.',
           buttonNeutral: 'Ask Me Later',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
-        }
+        },
       );
 
       if (status === PermissionsAndroid.RESULTS.GRANTED) {
@@ -61,7 +61,7 @@ export const requestLocationPermission = async (
       if (status === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
         onShowSettingsPrompt(
           'GPS Access Blocked',
-          'Location tracking access is permanently denied. Please open your system settings and grant location permissions manually to sync active runs.'
+          'Location tracking access is permanently denied. Please open your system settings and grant location permissions manually to sync active runs.',
         );
       }
       return false;

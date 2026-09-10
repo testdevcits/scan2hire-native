@@ -3,7 +3,6 @@
 export const COLORS = {
   // Primary
 
-
   primary: '#F84525',
   primaryLight: '#F25D23',
   primaryDark: '#D93B1E',
@@ -51,7 +50,6 @@ export const COLORS = {
   grey900: '#111827',
   lightGrey: '#94A3B8',
 
-
   // Misc
   transparent: 'transparent',
   shadow: 'rgba(0, 0, 0, 0.15)',
@@ -67,14 +65,6 @@ export const COLORS = {
   inputBorder: '#D1D5DB',
   inputFocus: '#2563EB',
   inputPlaceholder: '#94A3B8',
-
-
-
-
-
-
-
-
 } as const;
 
-export default COLORS;// colors.ts
+export default COLORS; // colors.ts

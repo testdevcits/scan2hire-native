@@ -12,24 +12,30 @@ export const requestAppPermissions = async (): Promise<boolean> => {
       ];
 
       if (Number(Platform.Version) >= 33) {
-        permissionsToRequest.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+        permissionsToRequest.push(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        );
       }
 
-      const foregroundGranted = await PermissionsAndroid.requestMultiple(permissionsToRequest);
+      const foregroundGranted = await PermissionsAndroid.requestMultiple(
+        permissionsToRequest,
+      );
 
       const cameraOk =
         foregroundGranted[PermissionsAndroid.PERMISSIONS.CAMERA] ===
         PermissionsAndroid.RESULTS.GRANTED;
       const locationOk =
-        foregroundGranted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] ===
-          PermissionsAndroid.RESULTS.GRANTED ||
-        foregroundGranted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] ===
-          PermissionsAndroid.RESULTS.GRANTED;
+        foregroundGranted[
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        ] === PermissionsAndroid.RESULTS.GRANTED ||
+        foregroundGranted[
+          PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION
+        ] === PermissionsAndroid.RESULTS.GRANTED;
 
       if (!cameraOk || !locationOk) {
         Alert.alert(
           'Required Permissions Denied',
-          'Camera and location access are required to start attendance.'
+          'Camera and location access are required to start attendance.',
         );
         return false;
       }
@@ -41,13 +47,15 @@ export const requestAppPermissions = async (): Promise<boolean> => {
     }
   } else if (Platform.OS === 'ios') {
     try {
-      const locationStatus = await Geolocation.requestAuthorization('whenInUse');
+      const locationStatus = await Geolocation.requestAuthorization(
+        'whenInUse',
+      );
       if (locationStatus === 'granted') {
         return true;
       } else {
         Alert.alert(
           'Action Required',
-          'Please allow location access to start attendance.'
+          'Please allow location access to start attendance.',
         );
         return false;
       }

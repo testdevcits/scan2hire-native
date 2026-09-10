@@ -9,11 +9,10 @@ import {
   ViewStyle,
 } from 'react-native';
 
-
- import styles from './AppButton.styles';
+import styles from './AppButton.styles';
 import AppText from '../AppText';
 import { COLORS } from '../../../constants';
- 
+
 interface AppButtonProps extends TouchableOpacityProps {
   title: string;
   isLoading?: boolean;
@@ -43,21 +42,16 @@ const AppButton = ({
       activeOpacity={0.8}
       disabled={isDisabled}
       onPress={onPress}
-      style={[
-        styles.button,
-        isDisabled && styles.disabledButton,
-        buttonStyle,
-      ]}
-      {...props}>
+      style={[styles.button, isDisabled && styles.disabledButton, buttonStyle]}
+      {...props}
+    >
       {isLoading ? (
         <ActivityIndicator color={COLORS.white} />
       ) : (
         <>
           {leftIcon}
 
-          <AppText style={[styles.title, textStyle]}>
-            {title}
-          </AppText>
+          <AppText style={[styles.title, textStyle]}>{title}</AppText>
 
           {rightIcon}
         </>

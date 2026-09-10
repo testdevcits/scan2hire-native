@@ -1,14 +1,21 @@
 import React, { memo } from 'react';
+import { Modal, StyleSheet, View, TouchableOpacity } from 'react-native';
 import {
-  Modal,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-} from 'react-native';
-import { LucideIcon, AlertTriangle, CheckCircle2, Info, X } from 'lucide-react-native';
-import { COLORS, FONT_SIZE, FONTS, ICON_SIZE, RADIUS, SPACING } from '../../constants';
+  LucideIcon,
+  AlertTriangle,
+  CheckCircle2,
+  Info,
+  X,
+} from 'lucide-react-native';
+import {
+  COLORS,
+  FONT_SIZE,
+  FONTS,
+  ICON_SIZE,
+  RADIUS,
+  SPACING,
+} from '../../constants';
 import AppText from './AppText';
-
 
 export type ModalType = 'danger' | 'success' | 'info' | 'warning';
 
@@ -37,16 +44,27 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   Icon,
   isLoading = false,
 }) => {
-
   // Map colors and default icons based on type
   const getTypeStyles = () => {
     switch (type) {
       case 'danger':
-        return { color: COLORS.error, bg: '#FEF2F2', DefaultIcon: AlertTriangle };
+        return {
+          color: COLORS.error,
+          bg: '#FEF2F2',
+          DefaultIcon: AlertTriangle,
+        };
       case 'success':
-        return { color: COLORS.success, bg: '#F0FDF4', DefaultIcon: CheckCircle2 };
+        return {
+          color: COLORS.success,
+          bg: '#F0FDF4',
+          DefaultIcon: CheckCircle2,
+        };
       case 'warning':
-        return { color: COLORS.warning, bg: '#FFFBEB', DefaultIcon: AlertTriangle };
+        return {
+          color: COLORS.warning,
+          bg: '#FFFBEB',
+          DefaultIcon: AlertTriangle,
+        };
       default:
         return { color: COLORS.primary, bg: '#EFF6FF', DefaultIcon: Info };
     }
@@ -71,7 +89,11 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
           {/* Icon Header */}
           <View style={[styles.iconContainer, { backgroundColor: theme.bg }]}>
-            <ModalIcon size={ICON_SIZE.xl} color={theme.color} strokeWidth={2.5} />
+            <ModalIcon
+              size={ICON_SIZE.xl}
+              color={theme.color}
+              strokeWidth={2.5}
+            />
           </View>
 
           {/* Content */}
@@ -94,7 +116,10 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               style={[
                 styles.button,
                 styles.confirmButton,
-                { backgroundColor: type === 'danger' ? COLORS.error : COLORS.primary }
+                {
+                  backgroundColor:
+                    type === 'danger' ? COLORS.error : COLORS.primary,
+                },
               ]}
               onPress={onConfirm}
               disabled={isLoading}

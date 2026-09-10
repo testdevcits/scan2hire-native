@@ -1,7 +1,6 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../../constants';
 
- 
 export default StyleSheet.create({
   container: {
     marginBottom: SPACING.lg,
@@ -15,10 +14,10 @@ export default StyleSheet.create({
   },
 
   leftIconContainer: {
-  marginRight: 10, // Gives spacing between the icon and the typed text
-  justifyContent: 'center',
-  alignItems: 'center',
-},
+    marginRight: 10, // Gives spacing between the icon and the typed text
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
   inputContainer: {
     flexDirection: 'row',

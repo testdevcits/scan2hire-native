@@ -8,9 +8,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, FONTS } from '../constants';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import HistoryScreen from '../screens/history/HistoryScreen';
- 
+
 export type BottomTabParamList = {
-  Dashboard: undefined;
+  Home: undefined;
   History: undefined;
 };
 
@@ -21,9 +21,7 @@ const TabsNavigation = () => {
   const brandPrimary = COLORS.primary;
   const brandInactive = COLORS.lightGrey;
   const insets = useSafeAreaInsets();
- 
 
- 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -35,7 +33,10 @@ const TabsNavigation = () => {
           styles.tabBar,
           {
             height: (Platform.OS === 'ios' ? 70 : 62) + insets.bottom,
-            paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 12 : 8),
+            paddingBottom: Math.max(
+              insets.bottom,
+              Platform.OS === 'ios' ? 12 : 8,
+            ),
           },
         ],
         tabBarShowLabel: true,
@@ -65,7 +66,7 @@ const TabsNavigation = () => {
                   focused && styles.activeIconWrapper,
                 ]}
               >
-                {route.name === 'Dashboard' ? (
+                {route.name === 'Home' ? (
                   <LayoutDashboard
                     size={size}
                     color={iconColor}
@@ -87,10 +88,10 @@ const TabsNavigation = () => {
       })}
     >
       <Tab.Screen
-        name="Dashboard"
+        name="Home"
         component={DashboardScreen}
         options={{
-          tabBarLabel: 'Dashboard',
+          tabBarLabel: 'Home',
         }}
       />
 
@@ -99,7 +100,7 @@ const TabsNavigation = () => {
         component={HistoryScreen}
         options={{
           title: 'My History',
-          tabBarLabel: 'History',
+          tabBarLabel: 'Attendence History',
         }}
       />
     </Tab.Navigator>

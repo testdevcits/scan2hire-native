@@ -6,12 +6,11 @@ import {
   Briefcase,
   Target,
   Clock,
-  ArrowUpRight
+  ArrowUpRight,
 } from 'lucide-react-native';
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import AppText from '../../components/common/AppText';
 import { ImageViewerModal } from '../../components';
-
 
 interface ProgressData {
   workPercent: number;
@@ -34,7 +33,7 @@ const TimerMainCard: React.FC<TimerMainCardProps> = ({
   totalTime,
   workTime,
   breakTime,
-  targetTime = "08:30:00"
+  targetTime = '08:30:00',
 }) => {
   const size = 130;
   const strokeWidth = 8;
@@ -46,18 +45,24 @@ const TimerMainCard: React.FC<TimerMainCardProps> = ({
   const workStroke = (progress.workPercent / 100) * circumference;
   const breakStroke = (progress.breakPercent / 100) * circumference;
 
-  const primaryStatusColor = progress.complete ? COLORS.success : COLORS.success;
+  const primaryStatusColor = progress.complete
+    ? COLORS.success
+    : COLORS.success;
   const [isViewerVisible, setIsViewerVisible] = useState(false);
-  const [selecttedPhotoUrl, setSelectedPhoto] = useState('')
-
-
+  const [selecttedPhotoUrl, setSelectedPhoto] = useState('');
 
   return (
     <View style={styles.container}>
       {/* Header Row */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
-          <Pressable disabled={!TodaysSelfie} onPress={() => {setIsViewerVisible(!isViewerVisible),setSelectedPhoto(TodaysSelfie)}}>
+          <Pressable
+            disabled={!TodaysSelfie}
+            onPress={() => {
+              setIsViewerVisible(!isViewerVisible),
+                setSelectedPhoto(TodaysSelfie);
+            }}
+          >
             <Image source={{ uri: TodaysSelfie }} style={styles.avatar} />
           </Pressable>
           <View>
@@ -114,14 +119,16 @@ const TimerMainCard: React.FC<TimerMainCardProps> = ({
           {/* Center Text in Circle */}
           <View style={styles.circleCenterText}>
             <Clock size={16} color={COLORS.textLight} />
-            <AppText style={styles.mainTime}>{totalTime.split(':').slice(0, 2).join(':')}</AppText>
+            <AppText style={styles.mainTime}>
+              {totalTime.split(':').slice(0, 2).join(':')}
+            </AppText>
             <AppText style={styles.timeLabel}>HRS:MIN</AppText>
           </View>
         </View>
 
         {/* Right: Key Stats */}
         <View style={styles.statsColumn}>
-          <View  >
+          <View>
             <AppText style={styles.statHeader}>TOTAL DURATION</AppText>
             <AppText style={styles.statLargeValue}>{totalTime}</AppText>
           </View>
@@ -161,13 +168,13 @@ const TimerMainCard: React.FC<TimerMainCardProps> = ({
         </View>
       </View>
 
-      {isViewerVisible &&
+      {isViewerVisible && (
         <ImageViewerModal
           isVisible={isViewerVisible}
           onClose={() => setIsViewerVisible(false)}
           imageUrl={selecttedPhotoUrl}
         />
-      }
+      )}
     </View>
   );
 };
@@ -179,12 +186,12 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.04,
     shadowRadius: 16,
     elevation: 1,
-    marginBottom: 10
+    marginBottom: 10,
   },
   header: {
     flexDirection: 'row',

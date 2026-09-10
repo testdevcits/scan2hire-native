@@ -10,7 +10,12 @@ import {
   SafeAreaView,
   Platform,
 } from 'react-native';
-import { ChevronLeft, Share2, MoreVertical, Download } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Share2,
+  MoreVertical,
+  Download,
+} from 'lucide-react-native';
 import { COLORS, FONTS, SPACING } from '../../constants';
 import AppText from './AppText';
 
@@ -166,7 +171,7 @@ const styles = StyleSheet.create({
   },
   footerOffset: {
     height: 60, // Mimics space for bottom controls if needed later
-  }
+  },
 });
 
 export default memo(ImageViewerModal);

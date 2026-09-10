@@ -1,6 +1,3 @@
-
-
-
 // src/screens/HistoryScreen.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import {
@@ -13,7 +10,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { COLORS } from '../../constants';
-import { AttendanceRecord, attendanceService } from '../../api/services/apiService';
+import {
+  AttendanceRecord,
+  attendanceService,
+} from '../../api/services/apiService';
 import { useDispatch, useSelector } from 'react-redux';
 import { UserProfile } from '../../types/user';
 import { ConfirmationModal, Header, HistoryCard } from '../../components';
@@ -39,7 +39,6 @@ const HistoryScreen = () => {
   const dispatch = useDispatch<any>();
   const navigation = useNavigation<any>();
 
-
   useEffect(() => {
     fetchHistory();
   }, []);
@@ -63,8 +62,6 @@ const HistoryScreen = () => {
     fetchHistory();
   };
 
-
-
   const getTodayString = (): string => {
     return new Date().toISOString().split('T')[0];
   };
@@ -79,11 +76,11 @@ const HistoryScreen = () => {
   const filteredHistory = useMemo(() => {
     if (activeFilter === 'today') {
       const todayStr = getTodayString();
-      return history.filter((item) => item.dateKey === todayStr);
+      return history.filter(item => item.dateKey === todayStr);
     }
     if (activeFilter === 'yesterday') {
       const yesterdayStr = getYesterdayString();
-      return history.filter((item) => item.dateKey === yesterdayStr);
+      return history.filter(item => item.dateKey === yesterdayStr);
     }
     return history;
   }, [history, activeFilter]);
@@ -94,29 +91,26 @@ const HistoryScreen = () => {
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
 
   const handleLogout = () => {
-    setShowLogoutModal(!showLogoutModal)
-  }
-
+    setShowLogoutModal(!showLogoutModal);
+  };
 
   return (
     <View style={styles.safeContainer}>
       <View style={styles.container}>
         {/* Place the custom header here */}
-        <Header
-          user={user}
-          onLogout={handleLogout}
-
-        />
+        <Header user={user} onLogout={handleLogout} />
 
         {/* Screen Header */}
         <View style={styles.header}>
           <Text style={styles.titleText}>Attendance Records</Text>
-          <Text style={styles.subtitleText}>Review your recent punch activity</Text>
+          <Text style={styles.subtitleText}>
+            Review your recent punch activity
+          </Text>
         </View>
 
         {/* Quick Date-Filter Bar */}
         <View style={styles.filterBar}>
-          {(['all', 'today', 'yesterday'] as FilterType[]).map((filter) => (
+          {(['all', 'today', 'yesterday'] as FilterType[]).map(filter => (
             <TouchableOpacity
               key={filter}
               onPress={() => setActiveFilter(filter)}
@@ -147,7 +141,7 @@ const HistoryScreen = () => {
         ) : (
           <FlatList
             data={filteredHistory}
-            keyExtractor={(item) => item._id}
+            keyExtractor={item => item._id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
@@ -161,7 +155,9 @@ const HistoryScreen = () => {
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No attendance records found.</Text>
+                <Text style={styles.emptyText}>
+                  No attendance records found.
+                </Text>
                 <Text style={styles.emptySubText}>
                   {activeFilter === 'all'
                     ? 'Swipe down to sync recent data.'
@@ -188,7 +184,8 @@ const HistoryScreen = () => {
             index: 0,
             routes: [{ name: 'Login' }], // Replace 'Login' with your actual login route name
           });
-        }} title="Logout"
+        }}
+        title="Logout"
         description="Are you sure you want to Logout?"
         confirmText="Log-Out"
         cancelText="Cancel"
@@ -196,7 +193,6 @@ const HistoryScreen = () => {
       />
     </View>
   );
-}
+};
 
-export default HistoryScreen
-
+export default HistoryScreen;
