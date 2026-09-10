@@ -56,6 +56,8 @@
 	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>This app requires camera access to take your check-in selfie.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app requires photo library access to upload your profile picture.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app requires location access in the background to verify proximity and track work sessions.</string>
 	<key>NSLocationAlwaysUsageDescription</key>

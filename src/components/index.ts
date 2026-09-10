@@ -5,6 +5,7 @@ import Header from './common/Header';
 import HistoryCard from './cards/HistoryCard';
 import ImageViewerModal from './common/ImageViewerModal';
 import PhotoSourceSheet from './common/PhotoSourceSheet';
+import OfflineBanner from './common/OfflineBanner';
 
 export {
   ConfirmationModal,
@@ -14,4 +15,5 @@ export {
   HistoryCard,
   ImageViewerModal,
   PhotoSourceSheet,
+  OfflineBanner,
 };

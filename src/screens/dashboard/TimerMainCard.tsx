@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
-import { View, Image, StyleSheet, Dimensions, Pressable } from 'react-native';
+import { View, Image, StyleSheet, Pressable } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
-import {
-  Coffee,
-  Briefcase,
-  Target,
-  Clock,
-  ArrowUpRight,
-} from 'lucide-react-native';
+import { Coffee, Briefcase, Target, Clock } from 'lucide-react-native';
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import AppText from '../../components/common/AppText';
 import { ImageViewerModal } from '../../components';

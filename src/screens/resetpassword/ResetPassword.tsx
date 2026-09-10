@@ -1,19 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
   ScrollView,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  TextInput,
-  Alert,
 } from 'react-native';
 import Animated, {
   FadeInUp,
   FadeInDown,
   useAnimatedStyle,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import {
@@ -28,9 +24,8 @@ import {
 
 import { COLORS, SPACING, FONTS, FONT_SIZE, RADIUS } from '../../constants';
 import AppText from '../../components/common/AppText';
-import AppButton from '../../components/common/Button/AppButton';
+import { Button, Input } from '../../components';
 import { authService } from '../../api/services/apiService';
-import { Header } from '../../components';
 
 export default function ResetPasswordScreen({ navigation, route }: any) {
   const { email, resetToken } = route.params || { email: '', resetToken: '' };
@@ -45,15 +40,51 @@ export default function ResetPasswordScreen({ navigation, route }: any) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  // --- Validation Logic ---
-  const validation = {
-    hasLength: password.length >= 8,
-    hasUpper: /[A-Z]/.test(password),
-    hasLower: /[a-z]/.test(password),
-    hasNumber: /[0-9]/.test(password),
-    hasSymbol: /[^A-Za-z0-9]/.test(password),
-    isMatch: password === confirmPassword && confirmPassword.length > 0,
+  // --- Password Strength & Validation Rules ---
+  const getValidation = () => {
+    const hasLength = password.length >= 8;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSymbol = /[^A-Za-z0-9]/.test(password);
+    const isMatch = password === confirmPassword && confirmPassword !== '';
+
+    return {
+      hasLength,
+      hasUpper,
+      hasLower,
+      hasNumber,
+      hasSymbol,
+      isMatch,
+    };
   };
+
+  const validation = getValidation();
+
+  // Dynamic Strength Calculator
+  const getStrength = () => {
+    let score = 0;
+    if (validation.hasLength) score++;
+    if (validation.hasUpper && validation.hasLower) score++;
+    if (validation.hasNumber) score++;
+    if (validation.hasSymbol) score++;
+
+    switch (score) {
+      case 0:
+      case 1:
+        return { label: 'Weak', color: COLORS.error, percent: 25 };
+      case 2:
+        return { label: 'Fair', color: '#F59E0B', percent: 50 };
+      case 3:
+        return { label: 'Good', color: '#3B82F6', percent: 75 };
+      case 4:
+        return { label: 'Strong', color: COLORS.success, percent: 100 };
+      default:
+        return { label: 'Weak', color: COLORS.error, percent: 0 };
+    }
+  };
+
+  const strength = getStrength();
 
   const isFormValid =
     validation.hasLength &&
@@ -63,24 +94,13 @@ export default function ResetPasswordScreen({ navigation, route }: any) {
     validation.hasSymbol &&
     validation.isMatch;
 
-  // --- Strength Meter Logic ---
-  const getStrength = () => {
-    const score = Object.values(validation).filter(Boolean).length - 1; // subtract match criteria
-    if (password.length === 0)
-      return { label: '', color: COLORS.grey200, width: '0%' };
-    if (score <= 2) return { label: 'Weak', color: COLORS.error, width: '25%' };
-    if (score === 3)
-      return { label: 'Fair', color: COLORS.warning, width: '50%' };
-    if (score === 4) return { label: 'Good', color: COLORS.info, width: '75%' };
-    return { label: 'Strong', color: COLORS.success, width: '100%' };
-  };
-
-  const strength = getStrength();
-
-  const strengthBarStyle = useAnimatedStyle(() => ({
-    width: withSpring(strength.width as any) as any,
-    backgroundColor: withTiming(strength.color),
-  }));
+  // --- Reanimated Style for Password Strength Bar ---
+  const strengthBarStyle = useAnimatedStyle(() => {
+    return {
+      width: withTiming(`${strength.percent}%`, { duration: 300 }),
+      backgroundColor: strength.color,
+    };
+  });
 
   // --- Submit Handler ---
   const handleReset = async () => {
@@ -88,14 +108,22 @@ export default function ResetPasswordScreen({ navigation, route }: any) {
 
     setIsLoading(true);
     setServerError(null);
+
     try {
-      await authService.resetPassword({ email, resetToken, password });
+      await authService.resetPassword({
+        email,
+        resetToken,
+        password,
+      });
+
       setIsSuccess(true);
       setTimeout(() => {
-        navigation.replace('Login');
-      }, 3000);
+        navigation.navigate('Login');
+      }, 2000);
     } catch (err: any) {
-      setServerError(err.message || 'Reset failed. Please try again.');
+      setServerError(
+        err.message || 'Failed to reset password. Please try again.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -128,32 +156,26 @@ export default function ResetPasswordScreen({ navigation, route }: any) {
 
           <View style={styles.form}>
             {/* New Password */}
-            <View style={styles.inputWrapper}>
-              <AppText style={styles.label}>New Password</AppText>
-              <View style={styles.inputContainer}>
-                <LockKeyhole size={20} color={COLORS.textLight} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Enter new password"
-                  placeholderTextColor={COLORS.textLight}
-                  secureTextEntry={!showPassword}
-                  value={password}
-                  onChangeText={t => {
-                    setPassword(t);
-                    setServerError(null);
-                  }}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff size={20} color={COLORS.textLight} />
-                  ) : (
-                    <Eye size={20} color={COLORS.textLight} />
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
+            <Input
+              label="New Password"
+              placeholder="Enter new password"
+              value={password}
+              onChangeText={t => {
+                setPassword(t);
+                setServerError(null);
+              }}
+              isPassword
+              secureTextEntry={!showPassword}
+              leftIcon={<LockKeyhole size={20} color={COLORS.textLight} />}
+              rightIcon={
+                showPassword ? (
+                  <EyeOff size={20} color={COLORS.textLight} />
+                ) : (
+                  <Eye size={20} color={COLORS.textLight} />
+                )
+              }
+              onRightIconPress={() => setShowPassword(!showPassword)}
+            />
 
             {/* Strength Meter */}
             {password.length > 0 && (
@@ -177,32 +199,28 @@ export default function ResetPasswordScreen({ navigation, route }: any) {
             )}
 
             {/* Confirm Password */}
-            <View style={styles.inputWrapper}>
-              <AppText style={styles.label}>Confirm Password</AppText>
-              <View
-                style={[
-                  styles.inputContainer,
-                  !validation.isMatch &&
-                    confirmPassword.length > 0 &&
-                    styles.inputError,
-                ]}
-              >
-                <ShieldCheck size={20} color={COLORS.textLight} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Confirm your password"
-                  placeholderTextColor={COLORS.textLight}
-                  secureTextEntry={!showPassword}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                />
-              </View>
-              {!validation.isMatch && confirmPassword.length > 0 && (
-                <AppText style={styles.errorText}>
-                  Passwords do not match
-                </AppText>
-              )}
-            </View>
+            <Input
+              label="Confirm Password"
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              isPassword
+              secureTextEntry={!showPassword}
+              error={
+                !validation.isMatch && confirmPassword.length > 0
+                  ? 'Passwords do not match'
+                  : undefined
+              }
+              leftIcon={<ShieldCheck size={20} color={COLORS.textLight} />}
+              rightIcon={
+                showPassword ? (
+                  <EyeOff size={20} color={COLORS.textLight} />
+                ) : (
+                  <Eye size={20} color={COLORS.textLight} />
+                )
+              }
+              onRightIconPress={() => setShowPassword(!showPassword)}
+            />
 
             {/* Requirements Checklist */}
             <View style={styles.requirementsCard}>
@@ -231,7 +249,7 @@ export default function ResetPasswordScreen({ navigation, route }: any) {
               </View>
             )}
 
-            <AppButton
+            <Button
               title="Update Password"
               onPress={handleReset}
               isLoading={isLoading}

@@ -6,7 +6,6 @@ import {
   Briefcase,
   Coffee,
   Calendar,
-  ChevronRight,
 } from 'lucide-react-native';
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import { AttendanceRecord } from '../../api/services/apiService';

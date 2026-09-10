@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
 import { store } from './src/app/store';
 import AppNavigator from './src/navigations/AppNavigator';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar, View } from 'react-native';
 import { COLORS } from './src/constants';
 import Toast from 'react-native-toast-message';
@@ -11,6 +11,7 @@ import { toastConfig } from './src/components/common/ToastConfig';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { initAttendanceBackgroundFetch } from './src/services/locationTrackingService';
+import { OfflineBanner } from './src/components';
 
 export default function App() {
   useEffect(() => {
@@ -35,17 +36,13 @@ export default function App() {
               barStyle={'light-content'}
               backgroundColor={COLORS.primary}
             />
-            {/* 
-               REMOVED SafeAreaView from here. 
-               Handle safe areas inside screens so background colors/images look premium.
-            */}
-            <SafeAreaView style={{ flex: 1 }}>
-              <View style={{ flex: 1, backgroundColor: COLORS.background }}>
-                <NavigationContainer>
-                  <AppNavigator />
-                </NavigationContainer>
-              </View>
-            </SafeAreaView>
+            {/* Real-time professional offline/online banner */}
+            <OfflineBanner />
+            <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+              <NavigationContainer>
+                <AppNavigator />
+              </NavigationContainer>
+            </View>
 
             {/* 5. Toast stays at the very bottom of the JSX tree to stay on top */}
             <Toast config={toastConfig} />

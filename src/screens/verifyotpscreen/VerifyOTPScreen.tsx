@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -10,24 +10,18 @@ import {
   Alert,
 } from 'react-native';
 import { ShieldCheck, ArrowLeft, TriangleAlert } from 'lucide-react-native';
-import Animated, {
-  FadeInUp,
-  FadeInDown,
-  useSharedValue,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 
 import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
 import AppText from '../../components/common/AppText';
 import AppButton from '../../components/common/Button/AppButton';
 import { authService } from '../../api/services/apiService';
 
-const OTP_LENGTH = 6;
-const TIMER_INITIAL = 45;
-
 export default function VerifyOTPScreen({ navigation, route }: any) {
-  const { email } = route.params || { email: null };
+  const { email } = route.params || { email: 'your email' };
+
+  const OTP_LENGTH = 6;
+  const TIMER_INITIAL = 60;
 
   // State
   const [otp, setOtp] = useState('');
@@ -35,9 +29,8 @@ export default function VerifyOTPScreen({ navigation, route }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Refs & Animation
+  // Refs
   const inputRef = useRef<TextInput>(null);
-  const shakeOffset = useSharedValue(0);
 
   // Countdown Logic
   useEffect(() => {
@@ -92,7 +85,7 @@ export default function VerifyOTPScreen({ navigation, route }: any) {
         'Code Resent',
         'A new verification code has been sent to your email.',
       );
-    } catch (err: any) {
+    } catch {
       Alert.alert('Error', 'Failed to resend code. Please try again.');
     } finally {
       setIsLoading(false);

@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { BaseToast, ErrorToast, ToastConfig } from 'react-native-toast-message';
-import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react-native';
+import { ToastConfig } from 'react-native-toast-message';
+import { CheckCircle2, AlertCircle, Info } from 'lucide-react-native';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants';
 import AppText from './AppText';
 
-const CustomToast = ({ text1, text2, type, icon: Icon, color }: any) => (
+const CustomToast = ({ text1, text2, icon: Icon, color }: any) => (
   <View style={[styles.container, { borderLeftColor: color }]}>
     <View style={[styles.iconContainer, { backgroundColor: `${color}10` }]}>
       <Icon size={20} color={color} strokeWidth={2.5} />

@@ -5,6 +5,7 @@ import axios, {
   AxiosResponse,
 } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
 import { BASE_URL } from '../config/apiConfig';
 
 // 1. Configuration
@@ -18,9 +19,18 @@ const axiosClient: AxiosInstance = axios.create({
   },
 });
 
-// 2. Request Interceptor: Auth & Logging
+// 2. Request Interceptor: Auth & Network Check
 axiosClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    // 1. Pre-flight NetInfo check
+    const netState = await NetInfo.fetch();
+    if (netState.isConnected === false) {
+      return Promise.reject({
+        message:
+          'No internet connection available. Please check your network connection.',
+        status: 0,
+      });
+    }
     // Attach Token
     const token = await AsyncStorage.getItem('userToken');
     if (token && config.headers) {

@@ -1,13 +1,14 @@
-// src/navigation/TabsNavigation.tsx
-import React from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import React, { Suspense, lazy } from 'react';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LayoutDashboard, History } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COLORS, FONTS } from '../constants';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
-import HistoryScreen from '../screens/history/HistoryScreen';
+
+// Lazy load History tab screen to reduce initial tab mount overhead
+const HistoryScreen = lazy(() => import('../screens/history/HistoryScreen'));
 
 export type BottomTabParamList = {
   Home: undefined;
@@ -16,8 +17,19 @@ export type BottomTabParamList = {
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
-const TabsNavigation = () => {
-  // Leverage exact brand constants from your design tokens
+const TabSuspenseFallback = () => (
+  <View style={styles.fallbackContainer}>
+    <ActivityIndicator size="small" color={COLORS.primary} />
+  </View>
+);
+
+const LazyHistoryScreen = (props: any) => (
+  <Suspense fallback={<TabSuspenseFallback />}>
+    <HistoryScreen {...props} />
+  </Suspense>
+);
+
+export default function TabsNavigation() {
   const brandPrimary = COLORS.primary;
   const brandInactive = COLORS.lightGrey;
   const insets = useSafeAreaInsets();
@@ -40,20 +52,17 @@ const TabsNavigation = () => {
           },
         ],
         tabBarShowLabel: true,
-
         tabBarLabelStyle: {
           fontFamily: FONTS.semiBold,
           fontSize: 10,
           marginTop: 2,
           letterSpacing: 0.3,
         },
-
         tabBarItemStyle: {
           paddingVertical: 4,
           justifyContent: 'center',
           alignItems: 'center',
         },
-
         tabBarIcon: ({ focused }) => {
           const size = 20;
           const iconColor = focused ? brandPrimary : brandInactive;
@@ -80,8 +89,6 @@ const TabsNavigation = () => {
                   />
                 )}
               </View>
-              {/* Refined active indicator dot */}
-              {/* {focused && <View style={styles.activeDot} />} */}
             </View>
           );
         },
@@ -97,17 +104,15 @@ const TabsNavigation = () => {
 
       <Tab.Screen
         name="History"
-        component={HistoryScreen}
+        component={LazyHistoryScreen}
         options={{
           title: 'My History',
-          tabBarLabel: 'Attendence History',
+          tabBarLabel: 'Attendance History',
         }}
       />
     </Tab.Navigator>
   );
-};
-
-export default TabsNavigation;
+}
 
 const styles = StyleSheet.create({
   tabBar: {
@@ -116,34 +121,17 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     borderRadius: 0,
-
     backgroundColor: COLORS.surface,
-
-    // Thin borders using brand divider constant
     borderTopWidth: 1,
     borderTopColor: COLORS.divider,
-
     paddingTop: 6,
     paddingBottom: Platform.OS === 'ios' ? 16 : 8,
-
-    // Premium warm-glow drop shadow
-    // shadowColor: COLORS.primary,
-    // shadowOffset: {
-    //   width: 0,
-    //   height: 8,
-    // },
-    // shadowOpacity: 0.08,
-    // shadowRadius: 20,
-
-    // elevation: 8,
   },
-
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     height: 40,
   },
-
   iconWrapper: {
     width: 48,
     height: 30,
@@ -151,18 +139,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 14,
   },
-
   activeIconWrapper: {
-    // 8% opacity of brand primary color (#F84525) dynamically calculated
     backgroundColor: `${COLORS.primary}14`,
   },
-
-  activeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.primary,
-    position: 'absolute',
-    bottom: -4,
+  fallbackContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
   },
 });

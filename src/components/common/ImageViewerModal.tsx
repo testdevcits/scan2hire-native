@@ -10,13 +10,8 @@ import {
   SafeAreaView,
   Platform,
 } from 'react-native';
-import {
-  ChevronLeft,
-  Share2,
-  MoreVertical,
-  Download,
-} from 'lucide-react-native';
-import { COLORS, FONTS, SPACING } from '../../constants';
+import { ChevronLeft } from 'lucide-react-native';
+import { FONTS, SPACING } from '../../constants';
 import AppText from './AppText';
 
 const { width, height } = Dimensions.get('window');

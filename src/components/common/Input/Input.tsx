@@ -34,6 +34,13 @@ const Input = ({
   const [secureText, setSecureText] = useState(hasSecureTextToggle);
   const [focused, setFocused] = useState(false);
 
+  const isEditable =
+    disabled !== undefined
+      ? !disabled
+      : props.editable !== undefined
+      ? props.editable
+      : true;
+
   return (
     <View style={styles.container}>
       {label ? <AppText style={styles.label}>{label}</AppText> : null}
@@ -43,7 +50,7 @@ const Input = ({
           styles.inputContainer,
           focused && styles.focusedBorder,
           error && styles.errorBorder,
-          disabled && styles.disabledBorder,
+          (!isEditable || disabled) && styles.disabledBorder,
         ]}
       >
         {/* Left Icon Render Block */}
@@ -53,13 +60,19 @@ const Input = ({
 
         <TextInput
           {...props}
-          style={styles.input}
+          style={[styles.input, props.style]}
           secureTextEntry={hasSecureTextToggle ? secureText : false}
-          placeholderTextColor={COLORS.textLight}
+          placeholderTextColor={props.placeholderTextColor || COLORS.textLight}
           allowFontScaling={false}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          editable={disabled}
+          onFocus={e => {
+            setFocused(true);
+            props.onFocus?.(e);
+          }}
+          onBlur={e => {
+            setFocused(false);
+            props.onBlur?.(e);
+          }}
+          editable={isEditable}
         />
 
         {hasSecureTextToggle ? (

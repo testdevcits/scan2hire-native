@@ -1,5 +1,4 @@
-// src/screens/DashboardScreen.tsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import {
   View,
   Text,
@@ -12,10 +11,8 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Geolocation from 'react-native-geolocation-service';
-import ImagePicker, {
-  Image as PickerImage,
-} from 'react-native-image-crop-picker';
-import { AlertTriangle, LogOut } from 'lucide-react-native';
+import { launchCamera } from 'react-native-image-picker';
+import { LogOut } from 'lucide-react-native';
 
 import { COLORS, SPACING } from '../../constants';
 import { logoutUser } from '../../redux/slices/authSlice';
@@ -26,8 +23,12 @@ import {
   attendanceService,
   BreakType,
 } from '../../api/services/apiService';
-import { ConfirmationModal, Header, ImageViewerModal } from '../../components';
+import { ConfirmationModal, Header } from '../../components';
 import { useNavigation } from '@react-navigation/native';
+
+const ImageViewerModal = lazy(
+  () => import('../../components/common/ImageViewerModal'),
+);
 import TimerMainCard from './TimerMainCard';
 import ProfileCollapsibleCard from './ProfileCollapsibleCard';
 import TodaystimeLines from './TodaystimeLines';
@@ -113,9 +114,9 @@ export default function DashboardScreen() {
   const [clockOutLoading, setClockOutLoading] = useState<boolean>(false);
 
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
-  const [locationMessage, setLocationMessage] = useState<string>('');
-  const [actionMessage, setActionMessage] = useState<string>('');
-  const [actionTone, setActionTone] = useState<
+  const [_locationMessage, setLocationMessage] = useState<string>('');
+  const [_actionMessage, setActionMessage] = useState<string>('');
+  const [_actionTone, setActionTone] = useState<
     'info' | 'success' | 'warning' | 'error'
   >('info');
   const locationSyncRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -482,61 +483,77 @@ export default function DashboardScreen() {
       return;
     }
 
-    ImagePicker.openCamera({
-      width: 500,
-      height: 500,
-      cropping: true,
-      useFrontCamera: true,
-      includeBase64: true,
-      mediaType: 'photo',
-    })
-      .then(async (image: PickerImage) => {
-        if (!image.data) return;
-        setLoading(true);
-        try {
-          const coords = await readCurrentLocation();
-          const res = await attendanceService.startAttendance(
-            image.data!,
-            coords,
-          );
+    try {
+      const result = await launchCamera({
+        mediaType: 'photo',
+        cameraType: 'front',
+        includeBase64: true,
+        maxWidth: 800,
+        maxHeight: 800,
+        quality: 0.8,
+      });
 
-          if (res.success) {
-            const message = res.message || 'Attendance started successfully.';
-            setActionTone('success');
-            setActionMessage(message);
-            Alert.alert('Success', message);
-            startAttendanceLocationTracking().catch(error => {
-              console.warn(
-                '[attendance:location:bg] Start failed:',
-                error?.message || error,
-              );
-            });
-            fetchTodayStatus();
-          }
-        } catch (error: any) {
-          const message = getApiMessage(
-            error,
-            'Please turn on GPS and try again.',
-          );
-          setActionTone('error');
+      if (result.didCancel) {
+        return;
+      }
+
+      if (result.errorCode || result.errorMessage) {
+        Alert.alert(
+          'Camera Error',
+          result.errorMessage || 'Unable to open camera.',
+        );
+        return;
+      }
+
+      const base64Data = result.assets?.[0]?.base64;
+      if (!base64Data) {
+        Alert.alert('Camera Error', 'No image data captured.');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const coords = await readCurrentLocation();
+        const res = await attendanceService.startAttendance(base64Data, coords);
+
+        if (res.success) {
+          const message = res.message || 'Attendance started successfully.';
+          setActionTone('success');
           setActionMessage(message);
-          // Alert.alert('Start Work Failed', message);
-
           Toast.show({
-            type: 'error',
-            text1: 'Start Work Failed',
+            type: 'success',
+            text1: 'Success',
             text2: message,
           });
-        } finally {
-          setLoading(false);
+
+          startAttendanceLocationTracking().catch(error => {
+            console.warn(
+              '[attendance:location:bg] Start failed:',
+              error?.message || error,
+            );
+          });
+          fetchTodayStatus();
         }
-      })
-      .catch(err => {
+      } catch (error: any) {
+        const message = getApiMessage(
+          error,
+          'Please turn on GPS and try again.',
+        );
+        setActionTone('error');
+        setActionMessage(message);
+
+        Toast.show({
+          type: 'error',
+          text1: 'Start Work Failed',
+          text2: message,
+        });
+      } finally {
         setLoading(false);
-        if (err?.code !== 'E_PICKER_CANCELLED') {
-          Alert.alert('Camera Error', err?.message || 'Unable to open camera.');
-        }
-      });
+      }
+    } catch (err: any) {
+      setLoading(false);
+      Alert.alert('Camera Error', err?.message || 'Unable to open camera.');
+    }
   };
 
   const handleEndAttendance = async () => {
@@ -559,7 +576,11 @@ export default function DashboardScreen() {
         const message = res.message || 'Attendance ended successfully.';
         setActionTone('success');
         setActionMessage(message);
-        Alert.alert('Shift Ended', message);
+        Toast.show({
+          type: 'success',
+          text1: 'Shift Ended',
+          text2: message,
+        });
         fetchTodayStatus();
       }
     } catch (error: any) {
@@ -680,7 +701,7 @@ export default function DashboardScreen() {
     return missing;
   };
 
-  const missingDocs = getMissingDocuments();
+  getMissingDocuments();
   const timelineEvents = generateTimelineEvents();
   const progress = getAttendanceProgress();
 
@@ -909,11 +930,13 @@ export default function DashboardScreen() {
         />
 
         {isViewerVisible && (
-          <ImageViewerModal
-            isVisible={isViewerVisible}
-            onClose={() => setIsViewerVisible(false)}
-            imageUrl={selecttedPhotoUrl}
-          />
+          <Suspense fallback={null}>
+            <ImageViewerModal
+              isVisible={isViewerVisible}
+              onClose={() => setIsViewerVisible(false)}
+              imageUrl={selecttedPhotoUrl}
+            />
+          </Suspense>
         )}
       </ScrollView>
     </View>

@@ -1,11 +1,5 @@
 import React, { useCallback, useMemo, useRef, useEffect, memo } from 'react';
-import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Text,
-  BackHandler,
-} from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import {
   BottomSheetModal,
   BottomSheetView,

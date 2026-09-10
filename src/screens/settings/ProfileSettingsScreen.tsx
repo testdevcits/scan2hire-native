@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import {
   Alert,
   Image,
@@ -6,24 +6,41 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import ImagePicker, {
   Image as PickerImage,
 } from 'react-native-image-crop-picker';
-import { ArrowLeft, Camera, Save, User } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Camera,
+  Save,
+  User,
+  Phone,
+  Mail,
+  Briefcase,
+  UserCheck,
+  ShieldCheck,
+} from 'lucide-react-native';
+import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 
-import { COLORS, FONT_SIZE, FONTS, RADIUS, SPACING } from '../../constants';
+import Toast from 'react-native-toast-message';
+import { COLORS } from '../../constants';
 import { updateMyProfile } from '../../redux/slices/authSlice';
 import { UserProfile } from '../../types/user';
 import styles from './styles.profilesettings';
-import { ImageViewerModal, PhotoSourceSheet } from '../../components';
+import { Button, Input } from '../../components';
+
+const PhotoSourceSheet = lazy(
+  () => import('../../components/common/PhotoSourceSheet'),
+);
+const ImageViewerModal = lazy(
+  () => import('../../components/common/ImageViewerModal'),
+);
 
 interface RootState {
   auth: {
@@ -43,9 +60,7 @@ const ProfileSettingsScreen = () => {
   const [photoUri, setPhotoUri] = useState<string | undefined>();
   const [showPhotoSheet, setShowPhotoSheet] = useState(false);
   const [isViewerVisible, setIsViewerVisible] = useState(false);
-  const [selecttedPhotoUrl, setSelectedPhoto] = useState<string | undefined>(
-    '',
-  );
+  const [selectedPhotoUrl, setSelectedPhoto] = useState<string | undefined>('');
 
   useEffect(() => {
     setName(user?.name || '');
@@ -103,11 +118,6 @@ const ProfileSettingsScreen = () => {
   };
 
   const choosePhotoSource = () => {
-    // Alert.alert('Profile Photo', 'Choose photo source', [
-    //   { text: 'Camera', onPress: takeProfilePhoto },
-    //   { text: 'Gallery', onPress: pickPhotoFromGallery },
-    //   { text: 'Cancel', style: 'cancel' },
-    // ]);
     setShowPhotoSheet(true);
   };
 
@@ -116,12 +126,20 @@ const ProfileSettingsScreen = () => {
     const cleanMobile = mobile.trim();
 
     if (!cleanName) {
-      Alert.alert('Name Required', 'Please enter your name.');
+      Toast.show({
+        type: 'error',
+        text1: 'Name Required',
+        text2: 'Please enter your name.',
+      });
       return;
     }
 
     if (!cleanMobile) {
-      Alert.alert('Mobile Required', 'Please enter your mobile number.');
+      Toast.show({
+        type: 'error',
+        text1: 'Mobile Required',
+        text2: 'Please enter your mobile number.',
+      });
       return;
     }
 
@@ -134,28 +152,44 @@ const ProfileSettingsScreen = () => {
     );
 
     if (updateMyProfile.fulfilled.match(result)) {
-      Alert.alert('Profile Updated', result.payload.message);
+      Toast.show({
+        type: 'success',
+        text1: 'Profile Updated',
+        text2: result.payload.message,
+      });
       navigation.goBack();
     } else {
-      Alert.alert(
-        'Update Failed',
-        result.payload || 'Unable to update profile.',
-      );
+      Toast.show({
+        type: 'error',
+        text1: 'Update Failed',
+        text2: result.payload || 'Unable to update profile.',
+      });
     }
   };
 
   return (
     <View style={styles.safeContainer}>
+      {/* Premium Top Navigation Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => navigation.goBack()}
-        >
-          <ArrowLeft size={22} color={COLORS.textPrimary} />
-        </TouchableOpacity>
-        <View>
-          <Text style={styles.headerTitle}>Settings</Text>
-          <Text style={styles.headerSubtitle}>Update profile details</Text>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+          >
+            <ArrowLeft size={20} color={COLORS.textPrimary} />
+          </TouchableOpacity>
+          <View>
+            <Text style={styles.headerTitle}>Profile Settings</Text>
+            <Text style={styles.headerSubtitle}>
+              Manage personal info & credentials
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.statusBadge}>
+          <View style={styles.statusDot} />
+          <Text style={styles.statusText}>Active</Text>
         </View>
       </View>
 
@@ -168,87 +202,147 @@ const ProfileSettingsScreen = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.photoSection}>
-            <Pressable
-              disabled={!photoUri}
-              onPress={() => {
-                setIsViewerVisible(!isViewerVisible),
-                  setSelectedPhoto(photoUri);
-              }}
-              style={styles.avatar}
-            >
-              {photoUri ? (
-                <Image source={{ uri: photoUri }} style={styles.avatarImage} />
-              ) : (
-                <User size={34} color={COLORS.primary} />
-              )}
-            </Pressable>
-            <TouchableOpacity
-              style={styles.photoButton}
-              onPress={choosePhotoSource}
-            >
-              <Camera size={16} color={COLORS.primary} />
-              <Text style={styles.photoButtonText}>Upload Profile Photo</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Avatar Section Card */}
+          <Animated.View
+            entering={FadeInUp.delay(100).duration(500)}
+            style={styles.photoSectionCard}
+          >
+            <View style={styles.avatarWrapper}>
+              <Pressable
+                disabled={!photoUri}
+                onPress={() => {
+                  if (photoUri) {
+                    setSelectedPhoto(photoUri);
+                    setIsViewerVisible(true);
+                  }
+                }}
+                style={styles.avatar}
+              >
+                {photoUri ? (
+                  <Image
+                    source={{ uri: photoUri }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <User size={46} color={COLORS.primary} />
+                )}
+              </Pressable>
 
-          <View style={styles.formCard}>
-            <Text style={styles.label}>Name</Text>
-            <TextInput
+              <TouchableOpacity
+                style={styles.cameraBadgeButton}
+                onPress={choosePhotoSource}
+                activeOpacity={0.85}
+              >
+                <Camera size={18} color={COLORS.white} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.userFullName}>
+              {name || user?.name || 'Employee'}
+            </Text>
+            <Text style={styles.userRoleSubtitle}>
+              {user?.role ? user.role.toUpperCase() : 'TEAM MEMBER'} • ID:{' '}
+              {user?.employeeProfile?.employeeId || 'N/A'}
+            </Text>
+
+            <TouchableOpacity
+              style={styles.changePhotoButton}
+              onPress={choosePhotoSource}
+              activeOpacity={0.75}
+            >
+              <Camera size={14} color={COLORS.primary} />
+              <Text style={styles.changePhotoText}>Change Profile Photo</Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* Section 1: Personal Info Card */}
+          <Animated.View
+            entering={FadeInUp.delay(200).duration(500)}
+            style={styles.sectionCard}
+          >
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <UserCheck size={18} color={COLORS.primary} />
+              </View>
+              <Text style={styles.sectionTitle}>Personal Details</Text>
+            </View>
+
+            <Input
+              label="Full Name"
               value={name}
               onChangeText={setName}
               placeholder="Enter your name"
-              placeholderTextColor={COLORS.textLight}
-              style={styles.input}
-              editable={false}
+              disabled={true}
+              leftIcon={<User size={18} color={COLORS.textLight} />}
             />
 
-            <Text style={styles.label}>Mobile</Text>
-            <TextInput
+            <Input
+              label="Mobile Number"
               value={mobile}
               onChangeText={setMobile}
               placeholder="Enter mobile number"
-              placeholderTextColor={COLORS.textLight}
               keyboardType="phone-pad"
-              style={styles.input}
-                editable={false}
+              disabled={true}
+              leftIcon={<Phone size={18} color={COLORS.textLight} />}
+            />
+          </Animated.View>
+
+          {/* Section 2: Account & System Info Card */}
+          <Animated.View
+            entering={FadeInUp.delay(300).duration(500)}
+            style={styles.sectionCard}
+          >
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <ShieldCheck size={18} color={COLORS.primary} />
+              </View>
+              <Text style={styles.sectionTitle}>Account Information</Text>
+            </View>
+
+            <Input
+              label="Email Address"
+              value={user?.email || 'N/A'}
+              disabled={true}
+              leftIcon={<Mail size={18} color={COLORS.textLight} />}
             />
 
-            <Text style={styles.readOnlyLabel}>Email</Text>
-            <Text style={styles.readOnlyValue}>{user?.email || 'N/A'}</Text>
+            <Input
+              label="Assigned Role"
+              value={user?.role || 'N/A'}
+              disabled={true}
+              leftIcon={<Briefcase size={18} color={COLORS.textLight} />}
+            />
+          </Animated.View>
 
-            <Text style={styles.readOnlyLabel}>Role</Text>
-            <Text style={styles.readOnlyValue}>{user?.role || 'N/A'}</Text>
-          </View>
-
-          <TouchableOpacity
-            activeOpacity={0.85}
-            disabled={loading}
-            onPress={saveProfile}
-            style={[styles.saveButton, loading && styles.disabledButton]}
-          >
-            <Save size={18} color={COLORS.white} />
-            <Text style={styles.saveButtonText}>
-              {loading ? 'Saving...' : 'Save Profile'}
-            </Text>
-          </TouchableOpacity>
+          {/* Save Button */}
+          <Animated.View entering={FadeInDown.delay(400).duration(500)}>
+            <Button
+              title="Save Profile"
+              isLoading={loading}
+              onPress={saveProfile}
+              leftIcon={<Save size={18} color={COLORS.white} />}
+              buttonStyle={styles.saveButton}
+            />
+          </Animated.View>
         </ScrollView>
-        <PhotoSourceSheet
-          visible={showPhotoSheet}
-          onClose={() => setShowPhotoSheet(false)}
-          onCamera={takeProfilePhoto}
-          onGallery={pickPhotoFromGallery}
-          hasImage={true} // Set true if user already has a photo
-          // onRemove={() => console.log('Remove logic')}
-        />
 
-        {isViewerVisible && (
-          <ImageViewerModal
-            isVisible={isViewerVisible}
-            onClose={() => setIsViewerVisible(false)}
-            imageUrl={selecttedPhotoUrl}
+        <Suspense fallback={null}>
+          <PhotoSourceSheet
+            visible={showPhotoSheet}
+            onClose={() => setShowPhotoSheet(false)}
+            onCamera={takeProfilePhoto}
+            onGallery={pickPhotoFromGallery}
+            hasImage={Boolean(photoUri)}
           />
-        )}
+
+          {isViewerVisible && (
+            <ImageViewerModal
+              isVisible={isViewerVisible}
+              onClose={() => setIsViewerVisible(false)}
+              imageUrl={selectedPhotoUrl}
+            />
+          )}
+        </Suspense>
       </KeyboardAvoidingView>
     </View>
   );
