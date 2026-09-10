@@ -12,9 +12,9 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import Geolocation from 'react-native-geolocation-service';
 import { launchCamera } from 'react-native-image-picker';
-import { LogOut } from 'lucide-react-native';
+import { LogOut, Timer, Watch, Clock } from 'lucide-react-native';
 
-import { COLORS, SPACING } from '../../constants';
+import { COLORS, ICON_SIZE, SPACING } from '../../constants';
 import { logoutUser } from '../../redux/slices/authSlice';
 import { requestAppPermissions } from '../../utils/permissionUtils';
 import { UserProfile } from '../../types/user';
@@ -752,118 +752,116 @@ export default function DashboardScreen() {
         {/* Primary Today's Attendance Operations Control */}
         <View style={styles.controlCard}>
           <Text style={styles.controlTitle}>Today's Attendance Operations</Text>
-          {/* {!!actionMessage && (
-            <View style={[styles.actionNotice, styles[`actionNotice_${actionTone}`]]}>
-              <Text style={styles.actionNoticeText}>{actionMessage}</Text>
-            </View>
-          )} */}
+          <Text style={styles.controlSubtitle}>
+            Record work shifts and momentary rest periods
+          </Text>
 
           {!todayRecord ? (
             <View style={styles.clockInContainer}>
-              <Text style={styles.clockInPrompt}>
-                You have not clocked in today yet.
-              </Text>
               <TouchableOpacity
-                style={styles.primaryClockInBtn}
+                style={styles.primaryClockOutBtn}
                 onPress={handleStartAttendance}
                 disabled={loading}
               >
                 {loading ? (
                   <ActivityIndicator color={COLORS.white} />
                 ) : (
-                  <Text style={styles.clockInBtnText}>Start Work Shift</Text>
+                  <>
+                    <LogOut size={20} color={COLORS.white} style={styles.btnIcon} />
+                    <Text style={styles.primaryBtnText}>Start Work Shift</Text>
+                  </>
                 )}
               </TouchableOpacity>
             </View>
           ) : (
-            <View>
-              {/* {!!locationMessage && (
-                <View
-                  style={[
-                    styles.locationNotice,
-                    todayRecord.loginLocation?.withinRadius === false && styles.locationNoticeWarning,
-                  ]}
-                >
-                  <Text style={styles.locationNoticeText}>{locationMessage}</Text>
-                </View>
-              )} */}
-              {/* Info Overview */}
-              {/* <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Status: <Text style={styles.summaryVal}>{todayRecord.status}</Text></Text>
-                <Text style={styles.summaryLabel}>Work: <Text style={styles.summaryVal}>{workTime}</Text></Text>
-                <Text style={styles.summaryLabel}>Break: <Text style={styles.summaryVal}>{breakTime}</Text></Text>
-              </View> */}
-
+            <View style={styles.attendanceActionsBlock}>
               {todayRecord.status === 'running' && (
-                <View style={styles.attendanceActionsBlock}>
+                <>
                   <TouchableOpacity
-                    style={[styles.endWorkBtn, loading && { opacity: 0.6 }]}
+                    style={[styles.primaryClockOutBtn, loading && { opacity: 0.7 }]}
                     onPress={handleEndAttendance}
-                    disabled={loading}
-                  >
-                    <Text style={styles.actionBtnText}>Clock Out</Text>
-                  </TouchableOpacity>
-
-                  <View style={styles.dividerLine} />
-
-                  {/* Horizontal Scroll Selector Pills for Breaks */}
-                  <Text style={styles.breakSelectionTitle}>
-                    Choose Break Type:
-                  </Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.pillsScroll}
-                  >
-                    {breakOptions.map(opt => (
-                      <TouchableOpacity
-                        key={opt.value}
-                        disabled={onBreak}
-                        onPress={() => setSelectedBreakType(opt.value)}
-                        style={[
-                          styles.pill,
-                          selectedBreakType === opt.value &&
-                            styles.pillSelected,
-                          onBreak &&
-                            selectedBreakType !== opt.value && { opacity: 0.5 },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.pillText,
-                            selectedBreakType === opt.value &&
-                              styles.pillTextSelected,
-                          ]}
-                        >
-                          {opt.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-
-                  {/* Action triggers */}
-                  <TouchableOpacity
-                    style={[
-                      styles.breakToggleBtn,
-                      onBreak
-                        ? styles.endBreakBtnColor
-                        : styles.startBreakBtnColor,
-                      loading && { opacity: 0.6 },
-                    ]}
-                    onPress={toggleBreak}
                     disabled={loading}
                   >
                     {loading ? (
                       <ActivityIndicator color={COLORS.white} />
                     ) : (
-                      <Text style={styles.actionBtnText}>
-                        {onBreak
-                          ? 'End Active Break'
-                          : `Start ${selectedBreakType} Break`}
-                      </Text>
+                      <>
+                        <LogOut size={20} color={COLORS.white} style={styles.btnIcon} />
+                        <Text style={styles.primaryBtnText}>Clock Out</Text>
+                      </>
                     )}
                   </TouchableOpacity>
-                </View>
+
+                  <Text style={styles.chooseBreakTitle}>CHOOSE BREAK TYPE</Text>
+
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.breakChipsContainer}
+                  >
+                    {breakOptions.map(opt => {
+                      const isSelected = selectedBreakType === opt.value;
+                      return (
+                        <TouchableOpacity
+                          key={opt.value}
+                          disabled={onBreak}
+                          onPress={() => setSelectedBreakType(opt.value)}
+                          style={[
+                            styles.breakChip,
+                            isSelected ? styles.breakChipActive : styles.breakChipInactive,
+                            onBreak && !isSelected && { opacity: 0.5 },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.breakChipText,
+                              isSelected
+                                ? styles.breakChipTextActive
+                                : styles.breakChipTextInactive,
+                            ]}
+                          >
+                            {opt.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.secondaryBreakBtn,
+                      onBreak && styles.secondaryBreakBtnActive,
+                      loading && { opacity: 0.7 },
+                    ]}
+                    onPress={toggleBreak}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <ActivityIndicator color={onBreak ? COLORS.white : '#C84C00'} />
+                    ) : (
+                      <>
+                        <Clock
+                          size={18}
+                          color={onBreak ? COLORS.white : '#C84C00'}
+                          style={styles.btnIcon}
+                        />
+                        <Text
+                          style={[
+                            styles.secondaryBtnText,
+                            onBreak && { color: COLORS.white },
+                          ]}
+                        >
+                          {onBreak
+                            ? 'End Active Break'
+                            : `Start ${
+                                breakOptions.find(o => o.value === selectedBreakType)?.label ||
+                                selectedBreakType
+                              } Break`}
+                        </Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </>
               )}
             </View>
           )}

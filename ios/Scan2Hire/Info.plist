@@ -42,16 +42,14 @@
 		<string>arm64</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-	</array>
+    <array>
+    <string>UIInterfaceOrientationPortrait</string>
+    </array>
+
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+    <string>UIInterfaceOrientationPortrait</string>
+    </array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
@@ -69,43 +67,25 @@
 	</array>
 	<key>UIAppFonts</key>
 	<array>
-		<string>DMSans_24pt-Thin.ttf</string>
 		<string>DMSans-Regular.ttf</string>
-		<string>DMSans_36pt-Black.ttf</string>
-		<string>DMSans_18pt-Medium.ttf</string>
-		<string>DMSans_36pt-ExtraBold.ttf</string>
-		<string>DMSans_18pt-Light.ttf</string>
-		<string>DMSans_36pt-Bold.ttf</string>
-		<string>DMSans_36pt-Thin.ttf</string>
 		<string>DMSans-ExtraLight.ttf</string>
-		<string>DMSans_24pt-Bold.ttf</string>
 		<string>DMSans-Black.ttf</string>
 		<string>DMSans-ExtraBold.ttf</string>
 		<string>DMSans-Medium.ttf</string>
-		<string>DMSans_18pt-Regular.ttf</string>
-		<string>DMSans_18pt-Black.ttf</string>
-		<string>DMSans_36pt-Medium.ttf</string>
-		<string>DMSans_36pt-SemiBold.ttf</string>
-		<string>DMSans_18pt-SemiBold.ttf</string>
-		<string>DMSans_18pt-Bold.ttf</string>
-		<string>DMSans_18pt-ExtraBold.ttf</string>
 		<string>DMSans-Light.ttf</string>
 		<string>DMSans-Thin.ttf</string>
-		<string>DMSans_24pt-ExtraBold.ttf</string>
-		<string>DMSans_24pt-ExtraLight.ttf</string>
-		<string>DMSans_24pt-Regular.ttf</string>
-		<string>DMSans_36pt-Light.ttf</string>
-		<string>DMSans_24pt-Black.ttf</string>
-		<string>DMSans_18pt-BlackItalic.ttf</string>
-		<string>DMSans_36pt-ExtraLight.ttf</string>
 		<string>DMSans-Bold.ttf</string>
-		<string>DMSans_24pt-Medium.ttf</string>
-		<string>DMSans_18pt-ExtraLight.ttf</string>
 		<string>DMSans-SemiBold.ttf</string>
-		<string>DMSans_24pt-Light.ttf</string>
-		<string>DMSans_24pt-SemiBold.ttf</string>
-		<string>DMSans_18pt-Thin.ttf</string>
-		<string>DMSans_36pt-Regular.ttf</string>
+		<string>Inter_18pt-SemiBold.ttf</string>
+		<string>Inter_18pt-ExtraBold.ttf</string>
+		<string>Inter_18pt-Italic.ttf</string>
+		<string>Inter_18pt-Thin.ttf</string>
+		<string>Inter_18pt-Light.ttf</string>
+		<string>Inter_18pt-Regular.ttf</string>
+		<string>Inter_18pt-Medium.ttf</string>
+		<string>Inter_18pt-Black.ttf</string>
+		<string>Inter_18pt-Bold.ttf</string>
+		<string>Inter_18pt-ExtraLight.ttf</string>
 	</array>
 </dict>
 </plist>
